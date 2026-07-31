@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>짬짬이 그리기</title>
+<meta name="description" content="화면이 한 획씩 보여 주고, 학생은 종이에 따라 그립니다. 교사는 시작만 누릅니다.">
+<meta name="theme-color" content="#E4572E">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- 1. 홈 — 그림 고르기 -->
+<section class="screen home" id="s-home">
+  <header class="home-head">
+    <h1>짬짬이 그리기</h1>
+    <p class="lead">그림을 고르면 화면이 한 획씩 보여 줍니다. 종이와 연필만 준비하세요.</p>
+    <p class="hint" id="offlineHint">한 번 열어 두면 인터넷 없이도 됩니다.</p>
+  </header>
+
+  <div class="filters">
+    <div class="chips" id="diffChips" role="group" aria-label="난이도"></div>
+    <div class="chips" id="themeChips" role="group" aria-label="주제"></div>
+  </div>
+
+  <ul class="grid" id="cardGrid"></ul>
+  <p class="empty" id="emptyMsg" hidden>고른 조건에 맞는 그림이 없습니다.</p>
+</section>
+
+<!-- 2. 준비 -->
+<section class="screen ready" id="s-ready" hidden>
+  <div class="stage stage-sm">
+    <svg class="canvas" id="readyCanvas" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <div class="side">
+    <p class="kicker" id="readyKicker"></p>
+    <h2 id="readyTitle"></h2>
+    <p class="setup" id="readySetup"></p>
+
+    <div class="options">
+      <div class="opt">
+        <span class="opt-name">진행</span>
+        <div class="seg" id="modeSeg"></div>
+      </div>
+      <div class="opt">
+        <span class="opt-name">속도</span>
+        <div class="seg" id="readySpeedSeg"></div>
+      </div>
+      <div class="opt">
+        <span class="opt-name">소리</span>
+        <div class="seg" id="soundSeg"></div>
+      </div>
+      <div class="opt">
+        <span class="opt-name">색칠 시간</span>
+        <div class="seg" id="coloringSeg"></div>
+      </div>
+    </div>
+
+    <div class="bar">
+      <button class="btn btn-go" data-act="start">시작</button>
+      <button class="btn" data-act="home">홈으로</button>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 따라 그리기 -->
+<section class="screen draw" id="s-draw" hidden>
+  <div class="stage" id="stage">
+    <svg class="canvas" id="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+    <svg class="canvas peek" id="peek" xmlns="http://www.w3.org/2000/svg" hidden></svg>
+    <p class="tap-hint" id="tapHint" hidden>화면을 누르면 다음 획</p>
+  </div>
+  <aside class="side">
+    <div class="meta">
+      <b id="stepNo">1 / 8</b>
+      <span id="timeLeft" class="time"></span>
+    </div>
+    <p class="resume" id="resumeHint" hidden>이어서 진행합니다. 준비되면 [재개]를 누르세요.</p>
+    <p class="label" id="stepLabel"></p>
+    <p class="say" id="stepSay"></p>
+
+    <div class="bar" id="bar">
+      <button class="btn btn-go" data-act="replay">방금 획 다시<kbd>R</kbd></button>
+      <button class="btn" data-act="pause" id="pauseBtn">멈춤<kbd>P</kbd></button>
+      <button class="btn" data-act="next">다음 획<kbd>→</kbd></button>
+      <button class="btn" data-act="prev">한 획 뒤로<kbd>←</kbd></button>
+      <div class="seg seg-speed" id="drawSpeedSeg"></div>
+      <button class="btn" data-act="peek">완성본<kbd>C</kbd></button>
+      <button class="btn" data-act="full">전체화면<kbd>F</kbd></button>
+      <button class="btn btn-quiet" data-act="exit">나가기<kbd>Esc</kbd></button>
+    </div>
+
+    <div class="confirm" id="confirmExit" hidden role="alertdialog" aria-labelledby="confirmText">
+      <p id="confirmText">활동을 끝내고 홈으로 갈까요?</p>
+      <div class="bar">
+        <button class="btn btn-go" data-act="exit-yes" id="exitYes">나가기<kbd>Enter</kbd></button>
+        <button class="btn" data-act="exit-no">계속하기<kbd>Esc</kbd></button>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<!-- 4. 완성 — 색칠 타이머 -->
+<section class="screen ready" id="s-done" hidden>
+  <div class="stage stage-sm">
+    <svg class="canvas" id="doneCanvas" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <div class="side">
+    <p class="kicker">완성</p>
+    <h2 id="doneTitle"></h2>
+    <p class="setup" id="doneSay">다 그렸어요. 이제 색칠해 볼까요?</p>
+    <p class="color-time" id="colorTime" hidden></p>
+    <div class="bar">
+      <button class="btn" data-act="color-plus" id="colorPlus" hidden>30초 더</button>
+      <button class="btn btn-go" data-act="color-skip" id="colorSkip" hidden>색칠 끝내기</button>
+      <button class="btn btn-go" data-act="to-complete" id="toComplete" hidden>마무리</button>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 마무리 -->
+<section class="screen finish" id="s-complete" hidden>
+  <h2>잘했어요!</h2>
+  <p class="lead">작품은 교사가 알아서 하세요. 이 서비스는 사진을 올리지 않습니다.</p>
+  <div class="bar">
+    <button class="btn btn-go btn-big" data-act="next-drawing">다음 그림</button>
+    <button class="btn btn-big" data-act="home">홈으로</button>
+  </div>
+</section>
+
+<script src="js/app.js"></script>
+</body>
+</html>
