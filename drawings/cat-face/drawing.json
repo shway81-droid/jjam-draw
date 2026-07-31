@@ -3,7 +3,9 @@
   "title": "고양이 얼굴",
   "theme": "animal",
   "difficulty": "easy",
-  "grades": ["lower"],
+  "grades": [
+    "lower"
+  ],
   "paper": "portrait",
   "viewBox": "0 0 400 500",
   "setupSay": "종이를 세로로 놓고, 가운데에 주먹만큼 크게 그릴 거예요.",
@@ -42,7 +44,7 @@
     },
     {
       "d": [
-        "M 188 272 L 212 272 L 200 288"
+        "M 188 272 L 212 272 L 200 288 L 188 272"
       ],
       "label": "코",
       "teacherSay": "눈 사이 아래에 작은 세모 코를 그려요."
@@ -77,5 +79,9 @@
       "teacherSay": "이마에 짧은 줄 두세 개로 무늬를 넣어요."
     }
   ],
-  "keywords": ["동물", "고양이", "얼굴"]
+  "keywords": [
+    "동물",
+    "고양이",
+    "얼굴"
+  ]
 }
