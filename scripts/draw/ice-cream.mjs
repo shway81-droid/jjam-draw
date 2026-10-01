@@ -36,7 +36,7 @@ export default function draw() {
     const [a, c] = across([199, y], [dir, k]);
     lines.push(b.open(`l${y}`, [a, c], ['cone', 'cone']));
   }
-  b.step('콘 무늬', '콘 안에 비스듬한 줄을 엇갈리게 그어 그물 무늬를 넣어요.', ...lines);
+  b.step('콘 무늬', '콘에 엇갈린 줄을 그어 그물 무늬를 넣어요.', ...lines);
 
   const scoopL = b.closed('scoopL', ellipse(165, 200, 51, 45, 12));
   b.step('앞 아이스크림', '콘 위에 동그란 아이스크림을 하나 그려요.', scoopL);
