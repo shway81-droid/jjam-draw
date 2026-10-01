@@ -9,7 +9,7 @@
   "paper": "portrait",
   "viewBox": "0 0 400 500",
   "setupSay": "종이를 세로로 놓고, 위쪽에 주먹만큼 큰 헬멧부터 그릴 거예요.",
-  "coloringSeconds": 90,
+  "coloringSeconds": 150,
   "steps": [
     {
       "d": [
