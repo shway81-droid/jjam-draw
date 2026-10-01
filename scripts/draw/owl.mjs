@@ -72,6 +72,6 @@ export default function draw() {
     id: 'owl', title: '부엉이', theme: 'animal', difficulty: 'normal', grades: ['middle'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.',
-    coloringSeconds: 120, steps: b.steps, keywords: ['동물', '부엉이', '새'],
+    coloringSeconds: 90, steps: b.steps, keywords: ['동물', '부엉이', '새'],
   };
 }

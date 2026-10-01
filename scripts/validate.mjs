@@ -14,7 +14,7 @@ const GRADES = ['lower', 'middle', 'upper'];
 
 const FIRST_STEP_MIN_RATIO = 0.4;   // PRD 4.1의 2번 — 높이 기준
 const MAX_STROKES_PER_STEP = 6;     // PRD 4.1의 1번 — 잔 획 묶음 상한
-const SECONDS_RANGE = [15, 40];     // PRD 7.2
+const SECONDS_RANGE = [10, 30];     // PRD 7.2
 const LABEL_LEN = [1, 8];           // PRD 4.5
 const SAY_LEN = [15, 40];
 const SETUP_LEN = [20, 50];

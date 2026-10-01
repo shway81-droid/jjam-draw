@@ -11,7 +11,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -93,7 +93,7 @@
       "paper": "landscape",
       "viewBox": "0 0 500 400",
       "setupSay": "종이를 가로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -166,7 +166,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 위쪽에 주먹만큼 크게 꽃을 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -244,7 +244,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -327,7 +327,7 @@
       "paper": "landscape",
       "viewBox": "0 0 500 400",
       "setupSay": "종이를 가로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -400,7 +400,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -480,7 +480,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -578,7 +578,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 위쪽에 주먹만큼 큰 헬멧부터 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -689,7 +689,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 아래쪽에 손바닥만큼 큰 몸통부터 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -782,7 +782,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 위쪽에 손바닥만큼 큰 우산부터 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -874,7 +874,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 가운데에 손바닥만큼 길게 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -964,7 +964,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 아래쪽에 손바닥만큼 큰 화분부터 그릴 거예요.",
-      "coloringSeconds": 120,
+      "coloringSeconds": 90,
       "steps": [
         {
           "d": [
@@ -1067,7 +1067,7 @@
       "paper": "landscape",
       "viewBox": "0 0 500 400",
       "setupSay": "종이를 가로로 놓고, 왼쪽에 주먹만큼 큰 머리부터 그릴 거예요.",
-      "coloringSeconds": 150,
+      "coloringSeconds": 120,
       "steps": [
         {
           "d": [
@@ -1191,7 +1191,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.",
-      "coloringSeconds": 150,
+      "coloringSeconds": 120,
       "steps": [
         {
           "d": [
@@ -1311,7 +1311,7 @@
       "paper": "landscape",
       "viewBox": "0 0 500 400",
       "setupSay": "종이를 가로로 놓고, 아래쪽에 손바닥만큼 큰 도시락부터 그릴 거예요.",
-      "coloringSeconds": 150,
+      "coloringSeconds": 120,
       "steps": [
         {
           "d": [
@@ -1433,7 +1433,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 위쪽에 주먹만큼 큰 머리부터 그릴 거예요.",
-      "coloringSeconds": 150,
+      "coloringSeconds": 120,
       "steps": [
         {
           "d": [
@@ -1564,7 +1564,7 @@
       "paper": "portrait",
       "viewBox": "0 0 400 500",
       "setupSay": "종이를 세로로 놓고, 위쪽에 주먹만큼 큰 머리부터 그릴 거예요.",
-      "coloringSeconds": 150,
+      "coloringSeconds": 120,
       "steps": [
         {
           "d": [
@@ -1694,7 +1694,7 @@
       "paper": "landscape",
       "viewBox": "0 0 500 400",
       "setupSay": "종이를 가로로 놓고, 왼쪽 위에 주먹만큼 큰 머리부터 그릴 거예요.",
-      "coloringSeconds": 150,
+      "coloringSeconds": 120,
       "steps": [
         {
           "d": [

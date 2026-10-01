@@ -72,6 +72,6 @@ export default function draw() {
     id: 'flower', title: '꽃 한 송이', theme: 'plant', difficulty: 'easy', grades: ['lower'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 위쪽에 주먹만큼 크게 꽃을 그릴 거예요.',
-    coloringSeconds: 120, steps: b.steps, keywords: ['식물', '꽃', '봄'],
+    coloringSeconds: 90, steps: b.steps, keywords: ['식물', '꽃', '봄'],
   };
 }

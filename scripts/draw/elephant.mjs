@@ -69,6 +69,6 @@ export default function draw() {
     id: 'elephant', title: '코끼리', theme: 'animal', difficulty: 'hard', grades: ['upper'],
     paper: 'landscape', viewBox: '0 0 500 400',
     setupSay: '종이를 가로로 놓고, 왼쪽에 주먹만큼 큰 머리부터 그릴 거예요.',
-    coloringSeconds: 150, steps: b.steps, keywords: ['동물', '코끼리', '동물원'],
+    coloringSeconds: 120, steps: b.steps, keywords: ['동물', '코끼리', '동물원'],
   };
 }

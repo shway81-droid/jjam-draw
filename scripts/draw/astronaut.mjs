@@ -68,6 +68,6 @@ export default function draw() {
     id: 'astronaut', title: '우주인', theme: 'fantasy', difficulty: 'normal', grades: ['middle'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 위쪽에 주먹만큼 큰 헬멧부터 그릴 거예요.',
-    coloringSeconds: 120, steps: b.steps, keywords: ['상상', '우주인', '우주'],
+    coloringSeconds: 90, steps: b.steps, keywords: ['상상', '우주인', '우주'],
   };
 }
