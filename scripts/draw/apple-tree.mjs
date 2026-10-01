@@ -24,7 +24,7 @@ const apple = (x, y, r) => [
   [x + r * 0.7, y + r * 0.8], [x, y + r], [x - r * 0.7, y + r * 0.8], [x - r, y + r * 0.1],
   [x - r * 0.95, y - r * 0.55], [x - r * 0.5, y - r * 0.98],
 ];
-const leaf = (x, y, dir) => [[x, y], [x + 9 * dir, y - 10], [x + 22 * dir, y - 10], [x + 14 * dir, y + 1]];
+const leaf = (x, y, dir) => [[x, y], [x + 10 * dir, y - 13], [x + 27 * dir, y - 14], [x + 18 * dir, y + 1]];
 
 export default function draw() {
   const b = bench();
@@ -41,22 +41,27 @@ export default function draw() {
   const trunkR = b.open('trunkR', [[266, 296], [240, 318], [226, 350], [226, 400], [236, 436]], ['crown', 'hill']);
   b.step('줄기', '나뭇잎 아래에서 언덕까지 줄기 양옆을 그어요.', trunkL, trunkR);
 
-  const fork = b.open('fork', [[176, 306], [192, 316], [200, 332], [208, 316], [224, 306]], ['crown', 'crown']);
+  const fork = b.open('fork', [[166, 300], [186, 316], [200, 342], [214, 316], [234, 300]], ['crown', 'crown']);
   b.step('가지', '줄기 위 가운데에 갈라진 가지를 그려요.', fork);
+
+  const twig = b.open('twig', [[226, 362], [248, 344], [268, 332], [274, 346], [254, 364], [228, 384]], ['trunkR', 'trunkR']);
+  const twigLeaf = b.closed('twigLeaf', [[282, 334], [290, 316], [310, 308], [306, 326], [290, 338]]);
+  b.step('작은 가지', '줄기 옆에 잎이 달린 작은 가지를 그려요.', twig, twigLeaf);
 
   const hole = b.closed('hole', ellipse(200, 384, 10, 15));
   b.step('나무 구멍', '줄기 가운데에 작은 구멍을 그려요.', hole);
 
-  const A = [[130, 120, 22], [262, 108, 22], [200, 196, 22], [112, 222, 22], [286, 220, 22]];
+  const A = [[136, 134, 25], [254, 128, 25], [200, 206, 25], [116, 234, 25], [282, 230, 25]];
   const apples1 = A.slice(0, 3).map(([x, y, r], k) => b.closed(`apple${k}`, apple(x, y, r)));
   b.step('사과 세 개', '나뭇잎 위쪽과 가운데에 사과를 세 개 그려요.', ...apples1);
   const apples2 = A.slice(3).map(([x, y, r], k) => b.closed(`apple${k + 3}`, apple(x, y, r)));
   b.step('사과 두 개', '나뭇잎 아래쪽 양옆에 사과를 두 개 더 그려요.', ...apples2);
 
-  const leaves = A.map(([x, y, r], k) => b.closed(`leaf${k}`, leaf(x + 6, y - r - 8, 1)));
+  const D = [1, -1, 1, 1, 1];
+  const leaves = A.map(([x, y, r], k) => b.closed(`leaf${k}`, leaf(x + 5 * D[k], y - r - 10, D[k])));
   b.step('사과 잎', '사과마다 위에 작은 잎을 하나씩 그려요.', ...leaves);
 
-  const stems = A.map(([x, y, r], k) => b.open(`stem${k}`, [[x, y - r * 0.72], [x + 2, y - r - 4], [x + 6, y - r - 8]], [`apple${k}`, `leaf${k}`]));
+  const stems = A.map(([x, y, r], k) => b.open(`stem${k}`, [[x, y - r * 0.72], [x + D[k], y - r - 4], [x + 5 * D[k], y - r - 10]], [`apple${k}`, `leaf${k}`]));
   b.step('꼭지', '사과와 잎 사이를 짧은 꼭지로 이어요.', ...stems);
 
   const fallen = b.closed('fallen', apple(310, 424, 20));
@@ -66,8 +71,8 @@ export default function draw() {
   const fStem = b.open('fStem', [[310, 410], [312, 400], [316, 396]], ['fallen', 'fLeaf']);
   b.step('떨어진 사과 잎', '떨어진 사과 위에 꼭지와 잎을 그려요.', fLeaf, fStem);
 
-  const grassL = b.bumps('grassL', 'hill', [60, 448], [140, 436], 3, 10, 1);
-  const grassR = b.bumps('grassR', 'hill', [250, 436], [290, 440], 2, 10, 1);
+  const grassL = b.bumps('grassL', 'hill', [60, 448], [130, 437], 2, 22, 1);
+  const grassR = b.bumps('grassR', 'hill', [244, 436], [284, 439], 2, 18, 1);
   b.step('풀', '언덕 위에 작은 풀을 동글동글 그려요.', grassL, grassR);
 
   return {
