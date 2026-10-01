@@ -2,7 +2,8 @@ import { bench, ellipse } from './lib.mjs';
 
 // ================================================================ 거북이 — 참조: refs/turtle.png, 왼쪽을 봅니다
 // 첫 획은 둥근 지붕 같은 등딱지 전체이고, 머리·다리·꼬리는 모두 등딱지(또는 머리)에서 나와 돌아옵니다.
-// 등 무늬는 닫힌 동그라미 둘과, 양 끝이 등딱지 테두리에 붙는 가장자리 조각 둘로 줄였습니다.
+// 등 무늬는 가운데 둥근 여섯 모 하나와, 그 모서리에서 등딱지 끝까지 뻗는 줄 여섯으로 바꿨습니다
+// (참조의 큰 동그라미 둘은 굵은 선에서 안경·눈처럼 읽혀서).
 // 발가락 혹과 등딱지 안쪽 겹줄은 굵은 선에서 뭉쳐 뺐습니다.
 
 export default function draw() {
@@ -27,23 +28,23 @@ export default function draw() {
   const rim = b.open('rim', [[156, 222], [196, 244], [250, 254], [304, 256], [360, 248], [418, 222]], ['shell', 'shell']);
   b.step('등딱지 아랫단', '등딱지 아래쪽을 따라 줄을 하나 그어 아랫단을 만들어요.', rim);
 
-  // 모서리가 둥근 네모 같은 동그라미 — 동전처럼 보이지 않게 조금 각을 줍니다.
-  const blob = (x0, y0, x1, y1) => {
-    const cx = (x0 + x1) / 2; const cy = (y0 + y1) / 2; const rx = (x1 - x0) / 2; const ry = (y1 - y0) / 2;
-    return Array.from({ length: 16 }, (_, i) => {
-      const t = (i / 16) * Math.PI * 2;
-      const c = Math.cos(t); const sn = Math.sin(t);
-      return [cx + rx * Math.sign(c) * Math.abs(c) ** 0.8, cy + ry * Math.sign(sn) * Math.abs(sn) ** 0.8];
-    });
-  };
-  const patA = b.closed('patA', blob(186, 132, 284, 234));
-  const patB = b.closed('patB', blob(300, 138, 392, 236));
-  b.step('큰 무늬 두 개', '등딱지 가운데에 둥근 무늬를 두 개 나란히 그려요.', patA, patB);
+  // 등 한가운데의 둥근 육각 무늬 — 꼭짓점을 살짝 둥글린 여섯 모 모양이라 눈처럼 보이지 않습니다.
+  const H = [[250, 108], [324, 108], [354, 152], [326, 196], [248, 196], [220, 152]];
+  const hex = b.closed('hex', H.flatMap((p, i) => {
+    const q = H[(i + 1) % H.length];
+    return [p, [p[0] + (q[0] - p[0]) * 0.5, p[1] + (q[1] - p[1]) * 0.5]];
+  }), 0.6);
+  b.step('가운데 무늬', '등딱지 한가운데에 모서리가 둥근 여섯 모 무늬를 그려요.', hex);
 
-  const patTop = b.open('patTop', [[240, 72], [246, 92], [270, 102], [304, 102], [330, 92], [338, 72]], ['shell', 'shell']);
-  const patL = b.open('patL', [[168, 130], [184, 132], [200, 120], [208, 96]], ['shell', 'shell']);
-  const patR = b.open('patR', [[384, 100], [372, 118], [376, 138], [396, 146], [410, 152]], ['shell', 'shell']);
-  b.step('가장자리 무늬', '큰 무늬 위로 등딱지 가장자리에 작은 무늬를 그려요.', patTop, patL, patR);
+  // 여섯 모의 모서리에서 등딱지 테두리와 아랫단까지 — 둘레 조각이 저절로 생깁니다.
+  const spoke = (name, p, mid, end, to) => b.open(name, [p, mid, end], ['hex', to]);
+  const s1 = spoke('s1', H[0], [232, 94], [214, 84], 'shell');
+  const s2 = spoke('s2', H[1], [346, 92], [366, 84], 'shell');
+  const s3 = spoke('s3', H[2], [384, 156], [416, 162], 'shell');
+  const s4 = spoke('s4', H[3], [340, 222], [350, 252], 'rim');
+  const s5 = spoke('s5', H[4], [234, 222], [226, 248], 'rim');
+  const s6 = spoke('s6', H[5], [190, 150], [156, 150], 'shell');
+  b.step('둘레 무늬', '여섯 모의 모서리마다 등딱지 끝까지 줄을 그어요.', s1, s2, s3, s4, s5, s6);
 
   const legFL = b.open('legFL', [[118, 246], [114, 280], [118, 310], [140, 318], [166, 314], [176, 290], [178, 256]], ['head', 'shell']);
   const legFR = b.open('legFR', [[200, 264], [196, 300], [204, 334], [234, 342], [266, 336], [272, 304], [268, 276]], ['shell', 'shell']);
