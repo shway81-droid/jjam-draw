@@ -233,12 +233,15 @@ for (const id of list) {
     fail('list.json', `"${id}" 폴더의 drawing.json 이 없습니다`);
   }
 }
+// 품질 검증 시안(<id>-v2)은 list.json 에 넣지 않고 서비스에 나가지 않지만, 같은 기준으로 검증합니다.
+// 시안을 정식 그림으로 올리거나 버릴 때 이 예외도 함께 지웁니다.
+const trials = folders.filter((f) => f.endsWith('-v2') && !list.includes(f));
 for (const f of folders) {
-  if (!list.includes(f)) fail('drawings/', `"${f}" 폴더가 list.json 에 없습니다`);
+  if (!list.includes(f) && !trials.includes(f)) fail('drawings/', `"${f}" 폴더가 list.json 에 없습니다`);
 }
 
 const report = [];
-for (const id of list) {
+for (const id of [...list, ...trials]) {
   if (!existsSync(join(ROOT, 'drawings', id, 'drawing.json'))) continue;
   const d = readDrawing(id);
   if (d.id !== id) fail(id, `drawing.json 의 id 가 "${d.id}" 입니다 — 폴더 이름과 달라요`);
@@ -260,6 +263,6 @@ if (errors.length) {
   console.error('');
   process.exit(1);
 }
-console.log(`\n검증 통과 — 그림 ${list.length}개\n`);
+console.log(`\n검증 통과 — 그림 ${list.length}개${trials.length ? ` + 시안 ${trials.length}개` : ''}\n`);
 console.log(report.join('\n'));
 console.log('');
