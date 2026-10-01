@@ -8,6 +8,7 @@
     "test": "node scripts/validate.mjs",
     "bundle": "node scripts/bundle.mjs",
     "dev": "node scripts/serve.mjs",
-    "draw": "node scripts/draw/build.mjs"
+    "draw": "node scripts/draw/build.mjs",
+    "voice": "python3 scripts/voice/build.py"
   }
 }

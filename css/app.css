@@ -145,6 +145,8 @@ kbd {
 
 .options { display: flex; flex-direction: column; gap: 10px; margin: 1vh 0; }
 .opt { display: flex; align-items: center; gap: 14px; }
+.opt[hidden] { display: none; }
+.credit { font-size: clamp(13px, 1vw, 16px); color: var(--dim); margin: 0 0 1vh; }
 .opt-name { font-size: clamp(18px, 1.4vw, 26px); font-weight: 700; min-width: 5.5em; }
 
 /* 나가기 확인 — 8m 에서 읽히고 리모컨으로 답할 수 있어야 합니다 */

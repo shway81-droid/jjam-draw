@@ -4,6 +4,7 @@
  *  - 시작 후 조작 0회: 자동 모드가 기본
  *  - 리모컨: PageUp/PageDown 을 포함해 키를 e.code 로 받습니다(한글 입력 상태에서도 동작)
  *  - 속도 변경은 지금 단계의 남은 시간에도 바로 적용
+ *  - 교사 멘트는 미리 만든 AI 음성으로 읽어 줍니다(FR-28) — 교사가 읽지 않아도 진행됩니다
  */
 'use strict';
 
@@ -33,9 +34,14 @@ const store = {
   del(k) { try { localStorage.removeItem(KEY + k); } catch { /* 무시 */ } },
 };
 
+// 소리는 세 가지입니다. 예전에 켬·끔(true·false)으로 저장한 값도 그대로 읽습니다.
+const SOUND_LIST = ['voice', 'beep', 'off'];
+const soundOf = (v) => (v === true ? 'voice' : v === false ? 'off' : SOUND_LIST.includes(v) ? v : 'voice');
+
 const settings = {
   speed: SPEED_LIST.includes(store.get('speed', 'normal')) ? store.get('speed', 'normal') : 'normal',
-  sound: store.get('sound', true),
+  sound: soundOf(store.get('sound', 'voice')),
+  voice: store.get('voice', 'F1'),
   coloring: store.get('coloring', true),
   mode: store.get('mode', 'auto'),
 };
@@ -77,11 +83,16 @@ function prepare(drawing) {
 
 /* ------------------------------------------------------------------ 소리 */
 let audio = null;
+function ctx() {
+  audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+  if (audio.state === 'suspended') audio.resume();
+  return audio;
+}
+
 function beep() {
-  if (!settings.sound) return;
+  if (settings.sound === 'off') return;
   try {
-    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-    if (audio.state === 'suspended') audio.resume();
+    ctx();
     const t0 = audio.currentTime;
     [[880, 0], [1175, 0.08]].forEach(([freq, offset]) => {
       const osc = audio.createOscillator();
@@ -95,6 +106,71 @@ function beep() {
       osc.start(t0 + offset);
       osc.stop(t0 + offset + 0.09);
     });
+  } catch { /* 소리는 없어도 활동은 진행됩니다 */ }
+}
+
+/* ------------------------------------------------------------------ 읽어 주기 */
+// 그림 하나 · 목소리 하나가 MP3 하나이고, 문장마다의 구간은 data/voice.json 에 있습니다.
+// 0번이 준비 안내(setupSay), 1번부터 단계 멘트입니다. 음성은 scripts/voice/build.py 가 만듭니다.
+// 파일을 아직 못 받았으면 기기 음성(speechSynthesis)으로 대신 읽어, 소리가 비는 일이 없게 합니다.
+let voiceData = null;
+const voiceBuf = new Map();   // 파일 → AudioBuffer 약속
+let speaking = null;
+let sayToken = 0;
+
+function voiceEntry(d) {
+  return voiceData?.drawings?.[d.id]?.[settings.voice] || null;
+}
+
+function loadVoice(d) {
+  const e = d && voiceEntry(d);
+  if (!e) return Promise.resolve(null);
+  if (!voiceBuf.has(e.file)) {
+    voiceBuf.set(e.file, fetch(e.file)
+      .then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .then((b) => ctx().decodeAudioData(b))
+      .catch(() => { voiceBuf.delete(e.file); return null; }));
+  }
+  return voiceBuf.get(e.file);
+}
+
+function hush() {
+  sayToken += 1;
+  try { speaking?.stop(); } catch { /* 이미 끝남 */ }
+  speaking = null;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+// index 0 = 준비 안내, 1.. = 단계 멘트. delay 는 신호음 뒤에 말을 시작하려는 틈(초)입니다.
+async function say(index, delay = 0) {
+  hush();
+  const d = run.drawing;
+  if (settings.sound !== 'voice' || !d) return;
+  const token = sayToken;
+  const text = index === 0 ? d.setupSay : d.steps[index - 1]?.teacherSay;
+  if (!text) return;
+  const e = voiceEntry(d);
+  // 받는 데 오래 걸리면 기다리지 않고 기기 음성으로 읽습니다.
+  const buf = e ? await Promise.race([loadVoice(d), new Promise((r) => setTimeout(() => r(null), 1500))]) : null;
+  if (token !== sayToken) return;
+  try {
+    if (buf && e.parts[index]) {
+      const c = ctx();
+      const [start, dur] = e.parts[index];
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      src.connect(c.destination);
+      // 문장 앞뒤에 무음이 있어 구간을 조금 넉넉히 잡아도 옆 문장이 섞이지 않습니다.
+      src.start(c.currentTime + delay, Math.max(0, start - 0.05), dur + 0.15);
+      speaking = src;
+      return;
+    }
+    if (!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ko-KR';
+    const ko = speechSynthesis.getVoices().find((v) => v.lang?.toLowerCase().startsWith('ko'));
+    if (ko) u.voice = ko;
+    setTimeout(() => { if (token === sayToken) speechSynthesis.speak(u); }, delay * 1000);
   } catch { /* 소리는 없어도 활동은 진행됩니다 */ }
 }
 
@@ -254,8 +330,15 @@ function paintOptions() {
     (v) => { settings.mode = v; store.set('mode', v); paintOptions(); });
   segment($('readySpeedSeg'), SPEED_LIST.map((k) => [k, SPEED_TEXT[k]]), () => settings.speed,
     (v) => { settings.speed = v; store.set('speed', v); paintOptions(); });
-  segment($('soundSeg'), [[true, '켬'], [false, '끔']], () => settings.sound,
-    (v) => { settings.sound = v; store.set('sound', v); paintOptions(); });
+  segment($('soundSeg'), [['voice', '읽어 주기'], ['beep', '신호음만'], ['off', '끔']], () => settings.sound,
+    (v) => {
+      settings.sound = v; store.set('sound', v); paintOptions();
+      if (v === 'voice') { say(0); precacheVoice(); } else hush();
+    });
+  const voices = voiceData?.voices || [];
+  $('voiceOpt').hidden = settings.sound !== 'voice' || voices.length < 2;
+  segment($('voiceSeg'), voices.map((v) => [v.id, v.label]), () => settings.voice,
+    (v) => { settings.voice = v; store.set('voice', v); paintOptions(); say(0); precacheVoice(); });
   segment($('coloringSeg'), [[true, '켬'], [false, '끔']], () => settings.coloring,
     (v) => { settings.coloring = v; store.set('coloring', v); paintOptions(); });
 }
@@ -282,6 +365,9 @@ function openReady(id) {
   paintFull($('readyCanvas'), d);
   paintOptions();
   show('ready');
+  // 준비 화면에서 종이 방향과 첫 획 크기를 읽어 줍니다 — 교사가 시작 전에 할 말입니다.
+  loadVoice(d);
+  say(0);
 }
 
 /* ------------------------------------------------------------------ 따라 그리기 */
@@ -296,11 +382,13 @@ function startActivity(fromStep = 0, paused = false) {
   $('tapHint').hidden = settings.mode !== 'manual';
   paintDrawSpeed();
   show('draw');
-  enterStep(false);
+  // 새로고침 뒤 이어 가기(멈춘 채 시작)에서는 갑자기 말하지 않습니다.
+  enterStep({ beep: false, say: !paused });
   startLoop();
 }
 
-function enterStep(sound = true) {
+// 단계에 들어갈 때 신호음을 울리고, 그 뒤에 멘트를 읽습니다(PRD 3.4 · FR-28).
+function enterStep({ beep: ring = true, say: speak = true } = {}) {
   const d = run.drawing;
   run.remain = d.sec[run.step] * 1000 * SPEED[settings.speed];
   run.last = performance.now();
@@ -331,7 +419,9 @@ function enterStep(sound = true) {
   $('stepSay').textContent = d.steps[run.step].teacherSay;
   paintPause();
   paintTime();
-  if (sound) beep();
+  if (ring) beep();
+  if (speak) say(run.step + 1, ring ? 0.3 : 0);
+  else hush();
 
   store.set('progress', { id: d.id, step: run.step });
 }
@@ -385,18 +475,19 @@ function prev() {
   if (run.step === 0) return;
   run.step -= 1;
   run.paused = true;
-  enterStep(false);
+  enterStep({ beep: false });
 }
 
 // 다시 보여 주면서 시간을 주지 않으면 뜻이 없으므로 타이머도 처음부터입니다(PRD 3.3).
 function replay() {
   $('resumeHint').hidden = true;
-  enterStep(false);
+  enterStep({ beep: false });
 }
 
 function togglePause() {
   run.paused = !run.paused;
   if (!run.paused) $('resumeHint').hidden = true;
+  else hush();
   run.last = performance.now();
   paintPause();
 }
@@ -443,6 +534,7 @@ function cancelExit() {
 }
 
 function exitActivity() {
+  hush();
   confirming = false;
   $('confirmExit').hidden = true;
   stopLoop();
@@ -454,6 +546,7 @@ function exitActivity() {
 
 /* ------------------------------------------------------------------ 완성·색칠 */
 function finish() {
+  hush();
   stopLoop();
   cancelExit();
   store.del('progress');
@@ -540,6 +633,7 @@ window.addEventListener('keydown', (e) => {
 
   switch (e.code) {
     case 'KeyR': e.preventDefault(); replay(); break;
+    case 'KeyS': e.preventDefault(); say(run.step + 1); break;
     case 'KeyP': e.preventDefault(); togglePause(); break;
     case 'KeyF': e.preventDefault(); fullscreen(); break;
     case 'KeyC': e.preventDefault(); if (!e.repeat) peek(true); break;
@@ -554,6 +648,7 @@ window.addEventListener('keyup', (e) => {
 
 // 화면이 안 보이는 동안은 세우고, 돌아오면 그 자리에서 이어갑니다.
 document.addEventListener('visibilitychange', () => {
+  if (document.hidden) hush();
   if (document.hidden && screen === 'draw' && !run.paused) { run.paused = true; paintPause(); }
   run.last = performance.now();
 });
@@ -572,10 +667,11 @@ document.addEventListener('click', (e) => {
   if (!act) return;
   switch (act) {
     case 'start': startActivity(); break;
-    case 'home': stopLoop(); store.del('progress'); show('home'); paintGrid(); break;
+    case 'home': hush(); stopLoop(); store.del('progress'); show('home'); paintGrid(); break;
     case 'next': next(); break;
     case 'prev': prev(); break;
     case 'replay': replay(); break;
+    case 'say': say(run.step + 1); break;
     case 'pause': togglePause(); break;
     case 'full': fullscreen(); break;
     case 'exit': askExit(); break;
@@ -596,16 +692,36 @@ const peekBtn = document.querySelector('[data-act="peek"]');
 
 /* ------------------------------------------------------------------ 오프라인 */
 // PWA 는 한 번은 온라인에서 열어야 캐시가 생깁니다. 그래서 홈에 준비 여부를 보여 줍니다(PRD 3.6).
+let coreReady = false;
+let voiceReady = false;
+function paintOffline() {
+  if (!coreReady) return;
+  $('offlineHint').textContent = voiceReady || settings.sound !== 'voice'
+    ? '준비 끝 — 이제 인터넷 없이도 됩니다.'
+    : '준비 끝 — 읽어 주는 목소리는 받는 중입니다.';
+}
+
+// 고른 목소리의 음성 파일을 화면이 뜬 뒤 뒤에서 받아 둡니다 — 첫 화면은 느려지지 않습니다.
+// 목록에 없는 옛 파일(문장을 고치기 전 음성)은 서비스 워커가 지웁니다.
+function precacheVoice() {
+  if (!voiceData || settings.sound !== 'voice' || !('serviceWorker' in navigator)) return;
+  const want = Object.values(voiceData.drawings).map((d) => d[settings.voice]?.file).filter(Boolean);
+  const keep = Object.values(voiceData.drawings).flatMap((d) => voiceData.voices.map((v) => d[v.id]?.file)).filter(Boolean);
+  navigator.serviceWorker.ready.then((reg) => reg.active?.postMessage({ precache: want, keep }));
+}
+
 function registerOffline() {
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('sw.js').then(() => {
     navigator.serviceWorker.addEventListener('message', (e) => {
-      if (e.data?.ready) $('offlineHint').textContent = '준비 끝 — 이제 인터넷 없이도 됩니다.';
+      if (e.data?.ready) { coreReady = true; paintOffline(); }
+      if (e.data?.audio) { voiceReady = e.data.audio.done >= e.data.audio.total; paintOffline(); }
     });
     const ask = () => navigator.serviceWorker.controller?.postMessage('ready?');
     ask();
     navigator.serviceWorker.ready.then(ask);
     setTimeout(ask, 1500);
+    precacheVoice();
   }).catch(() => { /* 서비스 워커가 막혀도 활동은 됩니다 */ });
 }
 
@@ -614,6 +730,9 @@ async function boot() {
   const res = await fetch('data/drawings.json');
   const data = await res.json();
   drawings = data.drawings.map(prepare);
+  // 음성 목록이 없어도 활동은 됩니다 — 그때는 기기 음성으로 읽습니다.
+  voiceData = await fetch('data/voice.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  if (voiceData && !voiceData.voices.some((v) => v.id === settings.voice)) settings.voice = voiceData.voices[0].id;
 
   buildChips();
   paintGrid();
