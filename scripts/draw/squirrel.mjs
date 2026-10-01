@@ -2,6 +2,28 @@ import { bench, ellipse } from './lib.mjs';
 
 // ================================================================ 다람쥐 — 참조 선화 없음(직접 디자인), 앉아서 도토리를 안고 왼쪽을 봅니다
 // 몸 뒤로 크게 말려 올라간 꼬리가 귀여움의 중심입니다. 꼬리 털은 꼬리 바깥 테두리를 따라 둥근 혹으로 냅니다.
+// 꼬리 바깥 테두리를 복슬복슬하게 — 지나가는 점들을 같은 길이로 n 토막 내고, 토막 가운데를 바깥으로 h 만큼 밀어 냅니다.
+const fluffy = (pts, n, h) => {
+  const acc = [0];
+  for (let i = 1; i < pts.length; i++) acc.push(acc[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const L = acc[acc.length - 1];
+  const at = (s) => {
+    let i = acc.findIndex((a) => a >= s); if (i <= 0) i = 1;
+    const t = (s - acc[i - 1]) / (acc[i] - acc[i - 1] || 1);
+    return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t];
+  };
+  const out = [];
+  for (let k = 0; k < n; k++) {
+    const a = at((L * k) / n); const c = at((L * (k + 1)) / n);
+    const dx = c[0] - a[0]; const dy = c[1] - a[1]; const dl = Math.hypot(dx, dy);
+    // 진행 방향의 왼쪽(화면에서 바깥)으로 밉니다 — 혹 하나에 점 셋을 둬서 둥글게 부풉니다
+    const push = (f, hh) => { const m = at((L * (k + f)) / n); return [m[0] + (dy / dl) * hh, m[1] - (dx / dl) * hh]; };
+    out.push(a, push(0.12, h * 0.75), push(0.5, h * 1.15), push(0.88, h * 0.75));
+  }
+  out.push(at(L));
+  return out;
+};
+
 export default function draw() {
   const b = bench();
   const head = b.closed('head', [
@@ -51,18 +73,18 @@ export default function draw() {
   const footB = b.open('footB', [[236, 437], [230, 458], [250, 470], [290, 468], [298, 452], [262, 424]], ['thigh', 'thigh']);
   b.step('두 발', '몸 아래에 앞으로 내민 발을 두 개 그려요.', footF, footB);
 
+  const outer = fluffy([
+    [270, 412], [300, 420], [345, 400], [372, 352], [380, 290], [372, 222],
+    [356, 160], [334, 112], [300, 78], [258, 64],
+  ], 6, -16);
   const tail = b.open('tail', [
-    [262, 404], [300, 420], [345, 400], [376, 352], [386, 290], [378, 222],
-    [360, 160], [336, 112], [300, 74], [258, 60], [222, 72], [210, 98],
+    [262, 404], ...outer, [222, 74], [210, 98],
     [222, 124], [246, 132], [266, 140], [282, 180], [284, 232], [270, 280], [236, 318],
-  ], ['thigh', 'body']);
+  ], ['thigh', 'body'], 0.7);
   b.step('큰 꼬리', '몸 뒤로 머리 위까지 크게 말려 올라간 꼬리를 그려요.', tail);
 
   const curl = b.open('curl', [[230, 126], [244, 104], [272, 96], [304, 114], [326, 156], [340, 214], [344, 280], [350, 330], [366, 360]], ['tail', 'tail']);
   b.step('꼬리 줄', '꼬리 끝에서 꼬리를 따라 안쪽 줄을 그어요.', curl);
-
-  const fluff = b.bumps('fluff', 'tail', [300, 420], [300, 74], 7, 14, -1);
-  b.step('꼬리 털', '꼬리 바깥을 따라 복슬복슬한 털을 그려요.', fluff);
 
   return {
     id: 'squirrel', title: '다람쥐', theme: 'animal', difficulty: 'hard', grades: ['upper'],

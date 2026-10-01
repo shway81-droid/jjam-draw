@@ -22,8 +22,8 @@ export default function draw() {
   b.step('눈 두 개', '앞머리 아래에 작고 동그란 눈을 두 개 그려요.', eyeL, eyeR);
 
   const mouth = b.closed('mouth', [[186, 214], [200, 218], [214, 214], [210, 225], [200, 229], [190, 225]], 0.8);
-  const cheekL = b.closed('cheekL', ellipse(146, 214, 11, 7));
-  const cheekR = b.closed('cheekR', ellipse(254, 214, 11, 7));
+  const cheekL = b.closed('cheekL', ellipse(156, 218, 9, 6));
+  const cheekR = b.closed('cheekR', ellipse(244, 218, 9, 6));
   b.step('웃는 입과 볼', '두 눈 사이 아래에 웃는 입을 그리고 양 볼을 그려요.', mouth, cheekL, cheekR);
 
   const dress = b.open('dress', [
@@ -35,26 +35,26 @@ export default function draw() {
   const belt = b.open('belt', [[150, 312], [176, 318], [200, 320], [224, 318], [250, 312]], ['dress', 'dress']);
   b.step('허리 줄', '원피스 허리를 가로지르는 줄을 하나 그어요.', belt);
 
-  const armPts = [[154, 258], [130, 252], [108, 242], [94, 248], [96, 262], [112, 268], [132, 272], [149, 282]];
+  const armPts = [[154, 258], [136, 262], [120, 268], [106, 264], [93, 270], [90, 284], [100, 294], [114, 292], [122, 285], [136, 285], [149, 290]];
   const armL = b.open('armL', armPts, ['dress', 'dress']);
   const armR = b.open('armR', mirror(armPts), ['dress', 'dress']);
   b.step('팔 두 개', '어깨에서 양옆으로 벌린 짧은 팔을 그려요.', armL, armR);
 
   const wandStar = b.closed('wandStar', star(336, 178, 24, 11));
-  const stick = b.open('stick', [[304, 250], [318, 218], [330, 196]], ['armR', 'wandStar']);
+  const stick = b.open('stick', [[306, 268], [320, 226], [330, 196]], ['armR', 'wandStar']);
   b.step('별 지팡이', '오른손 위에 별을 그리고 손까지 막대를 이어요.', wandStar, stick);
 
-  const upPts = [[128, 271], [100, 278], [72, 272], [50, 286], [52, 314], [78, 328], [112, 320], [149, 304]];
+  const upPts = [[130, 285], [104, 296], [74, 292], [52, 304], [54, 330], [80, 342], [114, 332], [150, 314]];
   const upL = b.open('upL', upPts, ['armL', 'dress']);
   const upR = b.open('upR', mirror(upPts), ['armR', 'dress']);
   b.step('위쪽 날개', '팔 아래에서 몸 옆으로 둥글고 큰 날개를 그려요.', upL, upR);
 
-  const loPts = [[146, 326], [116, 334], [88, 344], [76, 368], [92, 386], [120, 378], [136, 354]];
+  const loPts = [[148, 332], [120, 344], [96, 356], [86, 378], [102, 394], [126, 386], [134, 362]];
   const loL = b.open('loL', loPts, ['dress', 'dress']);
   const loR = b.open('loR', mirror(loPts), ['dress', 'dress']);
   b.step('아래쪽 날개', '큰 날개 아래에 작은 날개를 한 쌍 더 그려요.', loL, loR);
 
-  const linePts = [[142, 300], [110, 302], [74, 300]];
+  const linePts = [[146, 312], [110, 316], [70, 316]];
   const lineL = b.open('lineL', linePts, ['upL', 'upL']);
   const lineR = b.open('lineR', mirror(linePts), ['upR', 'upR']);
   b.step('날개 무늬', '큰 날개 안에 가로로 줄을 하나씩 그어요.', lineL, lineR);
@@ -65,7 +65,7 @@ export default function draw() {
   b.step('다리와 신발', '치마 아래에 짧은 다리와 둥근 신발을 그려요.', legL, legR);
 
   const sp1 = b.closed('sp1', star(68, 110, 16, 7));
-  const sp2 = b.closed('sp2', star(340, 370, 14, 6));
+  const sp2 = b.closed('sp2', star(346, 420, 14, 6));
   b.step('반짝이 별', '요정 옆 빈 곳에 작은 별을 두 개 그려요.', sp1, sp2);
 
   return {
