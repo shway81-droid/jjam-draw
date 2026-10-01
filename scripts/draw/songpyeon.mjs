@@ -5,25 +5,30 @@ import { sample } from '../path-geom.mjs';
 // 참조의 둥근 떡은 송편다운 반달 모양으로 바꿨습니다. 앞 송편부터 그리고, 뒤 송편은 앞 송편에 가려
 // 보이는 부분만 긋습니다(양 끝이 앞 송편 위에 놓입니다). 솔잎은 가지에 뿌리를 둔 가늘고 긴 잎(닫힌 모양)입니다.
 
-// 반달 — 아래는 살짝 처진 바닥, 위는 둥근 등. (cx, cy)는 바닥 가운데, rot 은 기울기(라디안).
+// 반달 — 아래는 거의 평평한 바닥, 위는 반 동그라미처럼 둥근 등, 양 끝은 살짝 튀어나온 뾰족한 끝.
+// (cx, cy)는 바닥 가운데, rot 은 기울기(라디안).
+const dome = (x) => Math.pow(Math.max(0, 1 - x * x), 0.55);
 function halfMoon(cx, cy, w, h, rot = 0) {
-  const pts = [];
-  for (let i = 0; i <= 8; i++) {
-    const t = Math.PI - (i / 8) * Math.PI;
-    // 끝 쪽은 낮고 가운데는 볼록한 등 — 아래 바닥과 만나는 양 끝이 뾰족해집니다.
-    pts.push([Math.cos(t) * w / 2, -Math.pow(Math.sin(t), 1.15) * h]);
+  const pts = [[-w * 0.53, -h * 0.03]];
+  for (let i = 1; i < 16; i++) {
+    const x = -1 + (i / 16) * 2;
+    pts.push([x * w / 2, -dome(x) * h]);
   }
-  pts.push([w * 0.3, h * 0.24], [0, h * 0.32], [-w * 0.3, h * 0.24]);
+  pts.push([w * 0.53, -h * 0.03]);
+  for (let i = 1; i < 6; i++) {
+    const x = 1 - (i / 6) * 2;
+    pts.push([x * w / 2 * 0.96, h * 0.07 * (1 - x * x)]);
+  }
   const c = Math.cos(rot); const s = Math.sin(rot);
   return pts.map(([x, y]) => [cx + x * c - y * s, cy + x * s + y * c]);
 }
 
 // 반달 등을 따라 안쪽으로 한 줄 — 송편 무늬. 양 끝은 송편 테두리에 붙입니다.
-function ridge(cx, cy, w, h, rot = 0, inset = 21) {
+function ridge(cx, cy, w, h, rot = 0, inset = 24) {
   const pts = [];
-  for (let i = 0; i <= 6; i++) {
-    const t = Math.PI - 0.35 - (i / 6) * (Math.PI - 0.7);
-    pts.push([Math.cos(t) * (w / 2 - 8), -Math.pow(Math.sin(t), 1.15) * (h - inset) - 2]);
+  for (let i = 0; i <= 8; i++) {
+    const x = -1 + (i / 8) * 2;
+    pts.push([x * w * 0.53, -dome(x) * h * 0.66 - h * 0.03]);
   }
   const c = Math.cos(rot); const s = Math.sin(rot);
   return pts.map(([x, y]) => [cx + x * c - y * s, cy + x * s + y * c]);
@@ -85,29 +90,29 @@ function needle(base, a, len = 30, wd = 3.5) {
 
 export default function draw() {
   const b = bench();
-  const plate = b.closed('plate', ellipse(250, 212, 186, 140, 16));
+  const plate = b.closed('plate', ellipse(250, 214, 176, 124, 16));
   b.step('접시', '종이 가운데에 옆으로 넓적한 큰 접시를 그려요.', plate);
 
   const rimPts = [];
   for (let i = 0; i <= 8; i++) {
     const f = (10 + (i / 8) * 160) * Math.PI / 180;
     const k = Math.sin(f);
-    rimPts.push([250 + 186 * Math.cos(f) * (1 - 0.07 * k), 212 + 140 * k * (1 - 0.14 * k)]);
+    rimPts.push([250 + 176 * Math.cos(f) * (1 - 0.07 * k), 214 + 124 * k * (1 - 0.12 * k)]);
   }
   const rim = b.open('rim', rimPts, ['plate', 'plate']);
   b.step('접시 테두리', '접시 아래쪽 안에 테두리 줄을 하나 더 그어요.', rim);
 
+  // 송편 네 개 — 앞 하나, 양옆 뒤 둘, 맨 뒤 가운데 하나. 접시보다 확실히 크게 보이도록 큼직하게 둡니다.
   const C = {
-    c1: [258, 298, 132, 66, 0],
-    c2: [168, 272, 116, 60, -0.1],
-    c3: [346, 270, 116, 60, 0.1],
-    c4: [214, 222, 110, 56, -0.05],
-    c5: [304, 216, 110, 56, 0.07],
+    c1: [246, 294, 204, 92, -0.05],
+    c2: [168, 240, 152, 74, 0.12],
+    c3: [336, 238, 152, 74, -0.1],
+    c4: [256, 184, 168, 78, 0.03],
   };
   const shape = (k) => halfMoon(...C[k]);
 
   const c1 = b.closed('c1', shape('c1'), 0.6);
-  b.step('앞 송편', '접시 아래쪽 가운데에 반달 모양 송편을 그려요.', c1);
+  b.step('앞 송편', '접시 아래쪽 가운데에 반달 모양 송편을 크게 그려요.', c1);
 
   const c2 = b.open('c2', visible(shape('c2'), [shape('c1')]), ['c1', 'c1'], 0.7);
   b.step('왼쪽 송편', '앞 송편 뒤 한쪽에 반달 송편을 하나 더 그려요.', c2);
@@ -115,35 +120,31 @@ export default function draw() {
   const c3 = b.open('c3', visible(shape('c3'), [shape('c1')]), ['c1', 'c1'], 0.7);
   b.step('오른쪽 송편', '앞 송편 뒤 다른 쪽에도 반달 송편을 그려요.', c3);
 
-  const c4 = b.open('c4', visible(shape('c4'), [shape('c1'), shape('c2'), shape('c3')]), ['c2', 'c1'], 0.7);
-  const c5 = b.open('c5', visible(shape('c5'), [shape('c1'), shape('c2'), shape('c3'), shape('c4')]), ['c4', 'c3'], 0.7);
-  b.step('뒤 송편 두 개', '송편들 뒤에 등만 보이는 송편을 두 개 그려요.', c4, c5);
+  const c4 = b.open('c4', visible(shape('c4'), [shape('c1'), shape('c2'), shape('c3')], 18), ['c2', 'c3'], 0.7);
+  b.step('뒤 송편', '송편들 뒤 가운데에 반달 송편을 하나 더 그려요.', c4);
 
-  // 솔가지 — 접시 왼쪽 테두리에서 위쪽 테두리까지 비스듬히 가로지릅니다.
-  const branch = b.open('branch', [[66, 196], [110, 176], [150, 152], [190, 124], [226, 100], [260, 74]], ['plate', 'plate']);
+  // 솔가지 — 접시 왼쪽 위 테두리를 따라 송편 위로 비스듬히 지나갑니다.
+  const branch = b.open('branch', [[76, 172], [112, 146], [150, 124], [188, 106], [228, 92]], ['plate', 'plate']);
   b.step('솔가지', '송편 위쪽에 접시를 비스듬히 가로지르는 솔가지를 그어요.', branch);
 
   const on = (p) => b.snap('branch', p);
-  const fwd = Math.atan2(74 - 196, 260 - 66);
+  const fwd = Math.atan2(92 - 172, 228 - 76);
   const mk = (name, p, da, len) => b.closed(name, needle(on(p), fwd + da, len), 0.7);
   b.step('솔잎 하나', '솔가지 시작 쪽에 가늘고 긴 솔잎을 짝지어 붙여요.',
-    mk('n1', [96, 184], -0.6, 46), mk('n2', [96, 184], 0.6, 46),
-    mk('n3', [132, 164], -0.6, 46), mk('n4', [132, 164], 0.6, 46));
-  b.step('솔잎 둘', '솔가지 가운데에도 솔잎을 짝지어 붙여요.',
-    mk('n5', [168, 140], -0.6, 46), mk('n6', [168, 140], 0.6, 46),
-    mk('n7', [204, 114], -0.6, 46), mk('n8', [204, 114], 0.6, 46));
-  b.step('솔잎 셋', '솔가지 끝 쪽에 짧은 솔잎을 몇 개 더 붙여요.',
-    mk('n9', [236, 94], -0.55, 36), mk('n10', [236, 94], 0.55, 36));
+    mk('n1', [100, 154], -0.65, 40), mk('n2', [100, 154], 0.5, 36),
+    mk('n3', [136, 132], -0.65, 40), mk('n4', [136, 132], 0.5, 36));
+  b.step('솔잎 둘', '솔가지 끝 쪽에도 솔잎을 짝지어 붙여요.',
+    mk('n5', [172, 114], -0.65, 38), mk('n6', [172, 114], 0.5, 32),
+    mk('n7', [204, 100], -0.6, 30), mk('n8', [204, 100], 0.45, 26));
 
-  // 작은 솔가지 — 뒤 송편 뒤에서 나와 접시 위쪽 테두리까지 뻗습니다.
-  const twig = b.open('twig', [[326, 168], [350, 150], [376, 134], [402, 120]], ['c5', 'plate']);
-  b.step('작은 솔가지', '뒤 송편 뒤에서 접시 끝까지 뻗은 작은 솔가지를 그어요.', twig);
+  // 작은 솔가지 — 뒤 송편 등에서 나와 접시 위쪽 테두리까지 뻗습니다.
+  const twig = b.open('twig', [[306, 136], [330, 122], [352, 114], [372, 110]], ['c4', 'plate']);
+  b.step('작은 솔가지', '뒤 송편 등에서 접시 끝까지 작은 솔가지를 그어요.', twig);
 
-  const fwd2 = Math.atan2(120 - 168, 402 - 326);
+  const fwd2 = Math.atan2(110 - 136, 372 - 306);
   const mk2 = (name, p, da, len) => b.closed(name, needle(b.snap('twig', p), fwd2 + da, len), 0.7);
   b.step('작은 솔잎', '작은 솔가지에도 솔잎을 짝지어 붙여요.',
-    mk2('m1', [342, 156], -0.65, 40), mk2('m2', [342, 156], 0.65, 40),
-    mk2('m3', [370, 138], -0.6, 34), mk2('m4', [370, 138], 0.6, 34));
+    mk2('m1', [326, 124], -0.7, 32), mk2('m3', [350, 115], -0.7, 28));
 
   // 무늬 줄 — 앞 송편에 가린 부분은 긋지 않고, 끝은 제 송편이나 앞 송편 테두리에 붙입니다.
   const pat = (k, fronts, ends) => b.open(`${k}p`, clipOpen(ridge(...C[k]), fronts.map(shape)), ends);
