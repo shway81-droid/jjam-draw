@@ -61,6 +61,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .card:hover { border-color: var(--coral); }
 .card .thumb { width: 100%; aspect-ratio: 4 / 5; display: block; }
+.card .thumb path { fill: none; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
 .card .name { font-size: clamp(19px, 1.5vw, 26px); font-weight: 700; margin: 10px 0 4px; }
 .card .facts { font-size: clamp(15px, 1.2vw, 20px); color: var(--dim); font-weight: 600; }
 .card .star {

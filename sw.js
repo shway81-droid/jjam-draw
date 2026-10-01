@@ -1,7 +1,7 @@
 // 오프라인에서 전 기능이 동작해야 합니다(PRD 3.6 · 10장).
 // 학교 인터넷을 신뢰하지 않으므로, 첫 방문에서 필요한 것을 전부 캐시합니다.
 // 그림 데이터는 통합본 하나라 파일 수가 늘지 않습니다(PRD 11장).
-const VERSION = 'jjam-draw-v1';
+const VERSION = 'jjam-draw-v2'; // 그림 18개를 새로 그려 캐시를 바꿉니다
 const ASSETS = [
   './',
   'index.html',

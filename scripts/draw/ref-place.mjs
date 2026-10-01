@@ -5,7 +5,10 @@ import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { ROOT } from '../bundle.mjs';
 
-const [id, paper = 'portrait', mw, mh, outArg] = process.argv.slice(2);
+const args = process.argv.slice(2);
+// 출력 경로(.png)는 크기 인자 없이 바로 와도 됩니다.
+const outArg = args.find((a, i) => i > 0 && a.endsWith('.png'));
+const [id, paper = 'portrait', mw, mh] = args.filter((a) => a !== outArg);
 const [W, H] = paper === 'landscape' ? [500, 400] : [400, 500];
 const maxW = Number(mw || W * 0.8);
 const maxH = Number(mh || H * 0.8);

@@ -29,17 +29,17 @@ export default function draw() {
   const finBot = b.open('finBot', [[200, 313], [188, 336], [198, 354], [232, 352], [258, 342], [264, 333]], ['body', 'body']);
   b.step('등지느러미', '몸 위에 물결 지느러미, 아래에 작은 지느러미를 그려요.', finTop, finBot);
 
+  // 앞이 좁고 뒤가 물결처럼 넓은 부채 지느러미 — 꼬리 쪽을 향합니다.
   const finSide = b.closed('finSide', [
-    [190, 232], [204, 208], [232, 196], [262, 195], [280, 204], [284, 228],
-    [280, 252], [262, 262], [232, 265], [204, 255],
-  ]);
-  b.step('옆지느러미', '몸 가운데에 나뭇잎 같은 지느러미를 그려요.', finSide);
+    [296, 230], [266, 210], [236, 200], [212, 204], [222, 218], [206, 230],
+    [222, 243], [212, 257], [236, 262], [266, 252],
+  ], 0.8);
+  b.step('옆지느러미', '몸 가운데에 꼬리 쪽으로 펼친 지느러미를 그려요.', finSide);
 
-  const s1 = b.closed('s1', ellipse(256, 131, 33, 30));
-  const s2 = b.closed('s2', ellipse(176, 162, 18, 23));
-  const s3 = b.closed('s3', ellipse(197, 284, 18, 18));
-  const s4 = b.closed('s4', ellipse(262, 296, 30, 25));
-  b.step('점무늬', '지느러미 둘레에 동그란 점무늬를 네 개 그려요.', s1, s2, s3, s4);
+  const s1 = b.closed('s1', ellipse(252, 132, 26, 22));
+  const s2 = b.closed('s2', ellipse(176, 168, 15, 18));
+  const s3 = b.closed('s3', ellipse(256, 298, 24, 20));
+  b.step('점무늬', '지느러미 위아래에 동그란 점무늬를 세 개 그려요.', s1, s2, s3);
 
   return {
     id: 'fish', title: '물고기', theme: 'animal', difficulty: 'easy', grades: ['lower'],
