@@ -9,7 +9,7 @@
   "paper": "portrait",
   "viewBox": "0 0 400 500",
   "setupSay": "종이를 세로로 놓고, 위쪽에 주먹만큼 크게 꽃을 그릴 거예요.",
-  "coloringSeconds": 120,
+  "coloringSeconds": 90,
   "steps": [
     {
       "d": [

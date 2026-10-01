@@ -62,7 +62,12 @@ const measure = (() => {
   return (d) => { p.setAttribute('d', d); return p.getTotalLength(); };
 })();
 
-const round5 = (v) => Math.round(v / 5) * 5;
+// 고정 8초(음성 멘트 약 4초 + 화면에서 종이로 눈 옮기기) + 길이당 12초
+// + 한 단계에 획이 여럿이면 하나 늘 때마다 2초(연필을 옮겨 대는 시간). 10~30초, 1초 단위(PRD 7.2).
+const SEC_BASE = 8;
+const SEC_PER_LENGTH = 12;
+const SEC_PER_EXTRA_STROKE = 2;
+const SEC_RANGE = [10, 30];
 
 function prepare(drawing) {
   const [, , w, h] = drawing.viewBox.split(/\s+/).map(Number);
@@ -71,7 +76,8 @@ function prepare(drawing) {
   drawing.sec = drawing.steps.map((step) => {
     if (typeof step.seconds === 'number') return step.seconds;
     const len = step.d.reduce((sum, d) => sum + measure(d), 0);
-    return round5(Math.min(15 + 12 * (len / diagonal), 40));
+    const sec = SEC_BASE + SEC_PER_LENGTH * (len / diagonal) + SEC_PER_EXTRA_STROKE * (step.d.length - 1);
+    return Math.round(Math.min(Math.max(sec, SEC_RANGE[0]), SEC_RANGE[1]));
   });
   drawing.anim = drawing.steps.map((step) => {
     const longest = Math.max(...step.d.map(measure));

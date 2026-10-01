@@ -9,7 +9,7 @@
   "paper": "landscape",
   "viewBox": "0 0 500 400",
   "setupSay": "종이를 가로로 놓고, 아래쪽에 손바닥만큼 큰 도시락부터 그릴 거예요.",
-  "coloringSeconds": 150,
+  "coloringSeconds": 120,
   "steps": [
     {
       "d": [

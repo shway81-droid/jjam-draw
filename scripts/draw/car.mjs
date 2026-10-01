@@ -53,6 +53,6 @@ export default function draw() {
     id: 'car', title: '자동차', theme: 'thing', difficulty: 'easy', grades: ['lower'],
     paper: 'landscape', viewBox: '0 0 500 400',
     setupSay: '종이를 가로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.',
-    coloringSeconds: 120, steps: b.steps, keywords: ['탈것', '자동차', '차'],
+    coloringSeconds: 90, steps: b.steps, keywords: ['탈것', '자동차', '차'],
   };
 }

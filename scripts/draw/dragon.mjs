@@ -70,6 +70,6 @@ export default function draw() {
     id: 'dragon', title: '용', theme: 'fantasy', difficulty: 'hard', grades: ['upper'],
     paper: 'landscape', viewBox: '0 0 500 400',
     setupSay: '종이를 가로로 놓고, 왼쪽 위에 주먹만큼 큰 머리부터 그릴 거예요.',
-    coloringSeconds: 150, steps: b.steps, keywords: ['상상', '용', '옛이야기'],
+    coloringSeconds: 120, steps: b.steps, keywords: ['상상', '용', '옛이야기'],
   };
 }

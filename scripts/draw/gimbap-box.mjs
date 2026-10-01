@@ -95,6 +95,6 @@ export default function draw() {
     id: 'gimbap-box', title: '김밥과 도시락', theme: 'food', difficulty: 'hard', grades: ['upper'],
     paper: 'landscape', viewBox: '0 0 500 400',
     setupSay: '종이를 가로로 놓고, 아래쪽에 손바닥만큼 큰 도시락부터 그릴 거예요.',
-    coloringSeconds: 150, steps: b.steps, keywords: ['음식', '김밥', '도시락'],
+    coloringSeconds: 120, steps: b.steps, keywords: ['음식', '김밥', '도시락'],
   };
 }

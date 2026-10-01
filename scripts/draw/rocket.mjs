@@ -45,6 +45,6 @@ export default function draw() {
     id: 'rocket', title: '로켓', theme: 'thing', difficulty: 'normal', grades: ['middle'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 가운데에 손바닥만큼 길게 그릴 거예요.',
-    coloringSeconds: 120, steps: b.steps, keywords: ['탈것', '로켓', '우주'],
+    coloringSeconds: 90, steps: b.steps, keywords: ['탈것', '로켓', '우주'],
   };
 }

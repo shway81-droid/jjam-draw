@@ -80,6 +80,6 @@ export default function draw() {
     id: 'umbrella-boots', title: '우산과 장화', theme: 'season', difficulty: 'normal', grades: ['middle'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 위쪽에 손바닥만큼 큰 우산부터 그릴 거예요.',
-    coloringSeconds: 120, steps: b.steps, keywords: ['비', '우산', '장화'],
+    coloringSeconds: 90, steps: b.steps, keywords: ['비', '우산', '장화'],
   };
 }
