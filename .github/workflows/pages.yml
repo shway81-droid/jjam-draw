@@ -32,7 +32,7 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html sw.js manifest.webmanifest favicon.svg .nojekyll _site/
-          cp -r css js data audio _site/
+          cp -r css js data audio shared icons assets _site/
 
       - uses: actions/upload-pages-artifact@v3
         with:

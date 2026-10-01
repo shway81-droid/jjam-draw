@@ -13,6 +13,7 @@ const TYPES = {
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.mp3': 'audio/mpeg',
+  '.woff2': 'font/woff2',
   '.webmanifest': 'application/manifest+json',
 };
 

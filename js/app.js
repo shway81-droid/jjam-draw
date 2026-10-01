@@ -218,6 +218,8 @@ let screen = 'home';
 function show(name) {
   screen = name;
   for (const s of SCREENS) $(`s-${s}`).hidden = s !== name;
+  // 따라 그리기 화면에서는 상단바를 숨겨 그림을 크게 보입니다 — 활동 중에 바로가기를 눌러 나가지 않게도 합니다.
+  $('topbar').hidden = name === 'draw';
   window.scrollTo(0, 0);
 }
 
@@ -669,8 +671,10 @@ $('s-draw').addEventListener('click', (e) => {
 });
 
 document.addEventListener('click', (e) => {
-  const act = e.target.closest('[data-act]')?.dataset.act;
+  const el = e.target.closest('[data-act]');
+  const act = el?.dataset.act;
   if (!act) return;
+  if (el.tagName === 'A') e.preventDefault();   // 상단바 로고 — 새로 읽지 않고 홈으로
   switch (act) {
     case 'start': startActivity(); break;
     case 'home': hush(); stopLoop(); store.del('progress'); show('home'); paintGrid(); break;
@@ -736,6 +740,7 @@ async function boot() {
   const res = await fetch('data/drawings.json');
   const data = await res.json();
   drawings = data.drawings.map(prepare);
+  $('drawingCount').textContent = `${drawings.length}가지`;
   // 음성 목록이 없어도 활동은 됩니다 — 그때는 기기 음성으로 읽습니다.
   voiceData = await fetch('data/voice.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
   if (voiceData && !voiceData.voices.some((v) => v.id === settings.voice)) settings.voice = voiceData.voices[0].id;
