@@ -32,11 +32,9 @@ export default function draw() {
 
   const k = 1.15;
   const lines = [];
-  for (const y of [296, 356]) {
-    for (const dir of [1, -1]) {
-      const [a, c] = across([199, y], [dir, k]);
-      lines.push(b.open(`l${y}${dir}`, [a, c], ['cone', 'cone']));
-    }
+  for (const [y, dir] of [[292, 1], [348, 1], [404, 1], [318, -1], [376, -1]]) {
+    const [a, c] = across([199, y], [dir, k]);
+    lines.push(b.open(`l${y}`, [a, c], ['cone', 'cone']));
   }
   b.step('콘 무늬', '콘 안에 비스듬한 줄을 엇갈리게 그어 그물 무늬를 넣어요.', ...lines);
 
