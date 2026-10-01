@@ -1,0 +1,98 @@
+name: 발행 — jjam-classroom 에서 받아 배포
+
+# 이 사이트의 소스는 shway81-droid/jjam-classroom 의 `draw/` 폴더다(2026-10-01 합류).
+# 이 저장소의 main 은 합치기 전 기록으로 얼어 있고, 발행되는 내용이 아니다.
+# 주소(github.io/jjam-draw/)가 저장소 이름에서 나오기 때문에 발행만 여기 남겨 두었다.
+#
+# 예전의 pages.yml(자기 main 을 발행)은 지웠다. 남겨 두면 이 저장소 main 에 무엇이든
+# 커밋될 때(매달 깨워 두기 등) 얼어 있는 옛 내용이 다시 발행된다 — 2026-09-30 에
+# 퀴즈·이야기·낱말이 실제로 그렇게 옛 화면으로 돌아갔다.
+#
+# 언제 도는가
+#   - jjam-classroom 에서 draw/ 가 바뀌어 머지되면 발행 신호(repository_dispatch)
+#   - 하루 한 번(KST 04시경) — 상류가 그대로면 몇 초 만에 건너뛴다
+#   - 즉시 반영하려면 Actions 탭에서 "Run workflow"
+
+on:
+  # 이 워크플로 자체가 바뀌면(=머지되면) 바로 한 번 발행한다
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish.yml']
+  schedule:
+    # 발행 저장소마다 분을 어긋낸다 (UTC 19:55 = KST 04:55)
+    - cron: '55 19 * * *'
+  workflow_dispatch:
+  repository_dispatch:
+    types: [classroom-published]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 상류(jjam-classroom) 받기
+        uses: actions/checkout@v4
+        with:
+          repository: shway81-droid/jjam-classroom
+          ref: main
+          path: src
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 그림 데이터 전수 검증(PRD 9장). 상류 CI 가 이미 보지만, 발행 직전에 한 번 더.
+      - name: 검증
+        run: cd src/draw && npm test
+
+      # tools/·drawings/·refs/·scripts/ 는 배포하지 않는다(예전 pages.yml 과 같은 목록 + 공유 카드).
+      - name: 배포용 폴더를 만들고 서비스워커 캐시 이름을 상류 커밋으로 갱신
+        id: build
+        run: |
+          SHA=$(git -C src rev-parse --short HEAD)
+          rm -rf site && mkdir site
+          cd src/draw
+          cp index.html sw.js manifest.webmanifest favicon.svg og-image.png .nojekyll ../../site/
+          cp -r css js data audio shared icons assets ../../site/
+          cd ../..
+          sed -i "s|const VERSION = '[^']*';|const VERSION = 'jjam-draw-${SHA}';|" site/sw.js
+          grep -q "jjam-draw-${SHA}" site/sw.js || { echo "::error::sw.js 캐시 이름 치환 실패"; exit 1; }
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+          echo "상류 $SHA 로 빌드함"
+
+      - name: 이미 같은 것이 올라가 있으면 건너뛴다
+        id: gate
+        run: |
+          LIVE=$(curl -sf --max-time 20 https://shway81-droid.github.io/jjam-draw/sw.js || true)
+          if printf '%s' "$LIVE" | grep -qF "${{ steps.build.outputs.sha }}"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "이미 상류 ${{ steps.build.outputs.sha }} 가 올라가 있다 — 건너뛴다"
+          fi
+
+      - name: Configure Pages
+        if: steps.gate.outputs.skip != 'true'
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload site
+        if: steps.gate.outputs.skip != 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy
+        id: deployment
+        if: steps.gate.outputs.skip != 'true'
+        uses: actions/deploy-pages@v4
