@@ -27,12 +27,12 @@ jobs:
       - run: npm test
 
       # tools/ 와 drawings/ 는 배포하지 않습니다.
-      # 앱이 읽는 것은 통합본 data/drawings.json 하나입니다(PRD 11장).
+      # 앱이 읽는 것은 통합본 data/drawings.json 하나와, 교사 멘트 음성 data/voice.json · audio/ 입니다.
       - name: 배포용 폴더 만들기
         run: |
           mkdir -p _site
           cp index.html sw.js manifest.webmanifest favicon.svg .nojekyll _site/
-          cp -r css js data _site/
+          cp -r css js data audio _site/
 
       - uses: actions/upload-pages-artifact@v3
         with:

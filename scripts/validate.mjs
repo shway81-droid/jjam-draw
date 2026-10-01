@@ -1,6 +1,7 @@
 // PRD 9장 정적 검증. 그림 데이터를 전수 확인합니다.
 // 의존성 없이 돕니다 — SVG path 파서와 bounding box 계산을 여기서 직접 합니다.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { ROOT, readList, readDrawing, bundleText } from './bundle.mjs';
 
@@ -252,6 +253,31 @@ if (!existsSync(bundlePath)) {
   fail('data/drawings.json', '통합본이 없습니다 — npm run bundle 을 돌려 주세요');
 } else if (readFileSync(bundlePath, 'utf8') !== bundleText()) {
   fail('data/drawings.json', '통합본이 원본과 다릅니다 — npm run bundle 을 돌려 주세요');
+}
+
+// 교사 멘트 음성이 지금 문장으로 만든 것인지 — 문장을 고치고 음성을 안 만들면 여기서 멈춥니다.
+// scripts/voice/build.py 와 같은 해시(준비 안내 + 단계 멘트를 줄바꿈으로 이은 sha1 앞 10자)입니다.
+const voicePath = join(ROOT, 'data', 'voice.json');
+if (!existsSync(voicePath)) {
+  fail('data/voice.json', '음성 목록이 없습니다 — npm run voice 를 돌려 주세요');
+} else {
+  const voice = JSON.parse(readFileSync(voicePath, 'utf8'));
+  for (const id of list) {
+    if (!existsSync(join(ROOT, 'drawings', id, 'drawing.json'))) continue;
+    const d = readDrawing(id);
+    const texts = [d.setupSay, ...d.steps.map((s) => s.teacherSay)];
+    const hash = createHash('sha1').update(texts.join('\n')).digest('hex').slice(0, 10);
+    const e = voice.drawings?.[id];
+    if (!e || e.hash !== hash) {
+      fail(`${id} 음성`, '멘트가 바뀌었는데 음성이 옛것입니다 — npm run voice 를 돌려 주세요');
+      continue;
+    }
+    for (const v of voice.voices) {
+      const f = e[v.id];
+      if (!f || !existsSync(join(ROOT, f.file))) fail(`${id} 음성`, `${v.id} 파일이 없습니다 — npm run voice 를 돌려 주세요`);
+      else if (f.parts.length !== texts.length) fail(`${id} 음성`, `${v.id} 구간이 ${f.parts.length}개입니다 — 문장은 ${texts.length}개`);
+    }
+  }
 }
 
 if (errors.length) {
