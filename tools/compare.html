@@ -12,9 +12,11 @@
   h1 { font-size:24px; margin:0 0 6px; }
   h2 { font-size:20px; margin:28px 0 10px; }
   .lead { margin:0 0 18px; color:var(--muted); font-size:15px; max-width:62em; line-height:1.6; }
-  .pairs { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; }
+  .pairs { display:grid; grid-template-columns:1fr; gap:16px; max-width:900px; }
   .pair { background:var(--card); border:2px solid var(--line); border-radius:16px; padding:12px; }
-  .pair .two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .pair .two { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .pair img { width:100%; aspect-ratio:4/5; object-fit:contain; display:block; border:1px solid var(--line); border-radius:10px; background:#fff; }
+  .ref .tag { background:#DDE8F5; color:#1D3557; }
   .pair figure { margin:0; }
   .pair svg { width:100%; display:block; border:1px solid var(--line); border-radius:10px; background:#fff; }
   .pair figcaption { font-size:13px; margin-top:6px; line-height:1.45; }
@@ -44,13 +46,14 @@
 <body>
 <h1>그림 시안 비교 — 고양이 · 공룡 · 로켓</h1>
 <p class="lead">
-  "새 스타일이면 아이들이 몰입할 만한가"를 셋으로 판단하는 페이지입니다. 위는 지금 그림과 시안의 완성본,
+  "새 스타일이면 아이들이 몰입할 만한가"를 셋으로 판단하는 페이지입니다. 위는 지금 그림, 시안이 따라 그린
+  AI 참조 선화(FLUX.1 schnell 생성), 시안의 완성본이고,
   아래는 시안의 단계별 누적 형태(앰버가 그 단계에서 새로 긋는 획)입니다.
   <b>떠 있는 획</b>은 맨 첫 획을 뺀 열린 획 가운데 양 끝 중 하나라도 앞서 그린 획 위에 없는 것의 비율입니다
   (닫힌 획 — 눈·창·별 — 은 끝이 없어 떠 있는 획이 아닙니다).
 </p>
 
-<h2>완성본 — 지금 그림과 시안</h2>
+<h2>완성본 — 지금 그림 · AI 참조 선화 · 시안</h2>
 <div class="pairs" id="pairs">읽는 중…</div>
 
 <h2>시안 단계별 누적 형태</h2>
@@ -61,7 +64,7 @@ import { floatingReport } from '../scripts/path-geom.mjs';
 
 const NS = 'http://www.w3.org/2000/svg';
 const DIFF = { easy: '쉬움', normal: '보통', hard: '도전' };
-const PAIRS = [['cat-face', 'cat-v2'], ['dino', 'dino-v2'], ['rocket', 'rocket-v2']];
+const PAIRS = [['cat-face', 'cat-v2', 'cat'], ['dino', 'dino-v2', 'dino'], ['rocket', 'rocket-v2', 'rocket']];
 
 const load = (id) => fetch(`../drawings/${id}/drawing.json`).then((r) => r.json());
 
@@ -86,17 +89,30 @@ function summary(d) {
     + `<span class="${r.floating.length ? 'bad' : ''}">${r.floating.length}개(${pct}%)</span>`;
 }
 
-const all = await Promise.all(PAIRS.flat().map(load));
+const all = await Promise.all(PAIRS.flatMap(([a, b]) => [a, b]).map(load));
 const byId = Object.fromEntries(all.map((d) => [d.id, d]));
 
 const pairs = document.getElementById('pairs');
 pairs.replaceChildren();
-for (const [oldId, newId] of PAIRS) {
+for (const [oldId, newId, ref] of PAIRS) {
   const box = document.createElement('div');
   box.className = 'pair';
   const two = document.createElement('div');
   two.className = 'two';
-  for (const [id, kind, tag] of [[oldId, 'old', '지금'], [newId, 'new', '시안']]) {
+  for (const [id, kind, tag] of [[oldId, 'old', '지금'], [ref, 'ref', 'AI 참조'], [newId, 'new', '시안']]) {
+    if (kind === 'ref') {
+      const fig = document.createElement('figure');
+      fig.className = kind;
+      const img = document.createElement('img');
+      img.src = `../refs/${ref}.png`;
+      img.alt = `${ref} 참조 선화`;
+      fig.appendChild(img);
+      const cap = document.createElement('figcaption');
+      cap.innerHTML = `<span class="tag">${tag}</span><b>refs/${ref}.png</b><br>시안은 이 선화를 따라 획을 다시 그었습니다`;
+      fig.appendChild(cap);
+      two.appendChild(fig);
+      continue;
+    }
     const d = byId[id];
     const fig = document.createElement('figure');
     fig.className = kind;

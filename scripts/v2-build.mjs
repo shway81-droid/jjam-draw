@@ -3,7 +3,8 @@
 // 열린 획의 양 끝은 앞서 그린 획 위의 가장 가까운 점에 붙입니다(snap).
 // 끝점을 손으로 맞추면 반드시 어긋나므로 계산으로 붙입니다.
 //
-//   node scripts/v2-build.mjs   → refs/*.svg, drawings/*-v2/drawing.json
+//   node scripts/v2-build.mjs   → refs/*-strokes.svg, drawings/*-v2/drawing.json
+// 참조 선화는 refs/*.png(생성 원본)와 refs/*.svg(potrace 벡터화)입니다. 좌표는 원본을 400×500 에 맞춰 놓고 읽었습니다.
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from './bundle.mjs';
@@ -54,7 +55,8 @@ function bench() {
       return add(name, smooth(P, false, t));
     },
     // 앞 획 테두리를 따라가며 바깥으로 혹을 n개 내는 획(등 뿔). 양 끝과 혹 사이가 테두리 위에 놓입니다.
-    bumps: (name, on, from, to, n, h, flip = 1) => {
+    // wrap: 닫힌 테두리에서 끝을 넘어 처음으로 이어 가는 쪽으로 지나갑니다.
+    bumps: (name, on, from, to, n, h, flip = 1, wrap = false) => {
       const base = named[on];
       const idx = (p) => {
         let bi = 0; let bd = Infinity;
@@ -62,7 +64,8 @@ function bench() {
         return bi;
       };
       const i0 = idx(from); const i1 = idx(to);
-      const seg = i0 <= i1 ? base.slice(i0, i1 + 1) : base.slice(i1, i0 + 1).reverse();
+      const seg = wrap ? [...base.slice(i0), ...base.slice(1, i1 + 1)]
+        : i0 <= i1 ? base.slice(i0, i1 + 1) : base.slice(i1, i0 + 1).reverse();
       // 누적 길이로 n 등분
       const acc = [0];
       for (let i = 1; i < seg.length; i++) acc.push(acc[i - 1] + dist(seg[i - 1], seg[i]));
@@ -77,14 +80,16 @@ function bench() {
       let d = '';
       for (let k = 0; k < n; k++) {
         const a = at((L * k) / n).p;
-        const m = at((L * (k + 0.5)) / n);
         const b = at((L * (k + 1)) / n).p;
-        const top = [m.p[0] + m.nx * h, m.p[1] + m.ny * h];
-        // 둥근 혹: 시작 → 꼭대기 → 끝을 두 C 로
-        const s1 = [a[0] + m.nx * h * 0.9, a[1] + m.ny * h * 0.9];
-        const s2 = [top[0] - (b[0] - a[0]) * 0.28, top[1] - (b[1] - a[1]) * 0.28];
-        const s3 = [top[0] + (b[0] - a[0]) * 0.28, top[1] + (b[1] - a[1]) * 0.28];
-        const s4 = [b[0] + m.nx * h * 0.9, b[1] + m.ny * h * 0.9];
+        // 혹의 방향은 양 끝을 잇는 선의 수직 — 굽은 테두리에서도 혹이 한쪽으로 기울지 않습니다.
+        const cx = b[0] - a[0]; const cy = b[1] - a[1]; const cl = Math.hypot(cx, cy) || 1;
+        const nx = (cy / cl) * flip; const ny = (-cx / cl) * flip;
+        const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        const top = [mid[0] + nx * h, mid[1] + ny * h];
+        const s1 = [a[0] + nx * h * 0.75, a[1] + ny * h * 0.75];
+        const s2 = [top[0] - cx * 0.3, top[1] - cy * 0.3];
+        const s3 = [top[0] + cx * 0.3, top[1] + cy * 0.3];
+        const s4 = [b[0] + nx * h * 0.75, b[1] + ny * h * 0.75];
         if (!d) d = `M ${fmt(a)}`;
         d += ` C ${fmt(s1)}, ${fmt(s2)}, ${fmt(top)} C ${fmt(s3)}, ${fmt(s4)}, ${fmt(b)}`;
       }
@@ -107,155 +112,158 @@ const star = (cx, cy, R, r) => Array.from({ length: 10 }, (_, i) => {
   return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr];
 });
 
-// ================================================================ 고양이
+// ================================================================ 고양이 — 참조: refs/cat.png (FLUX.1 schnell)
 function cat() {
   const b = bench();
   const head = b.closed('head', [
-    [72, 200], [80, 148], [96, 110], [90, 58], [104, 48], [154, 84],
-    [200, 80], [246, 84], [296, 48], [310, 58], [304, 110], [320, 148],
-    [328, 200], [306, 248], [256, 272], [200, 278], [144, 272], [94, 248],
+    [66, 176], [63, 152], [68, 134], [60, 104], [57, 74], [64, 70],
+    [94, 79], [120, 86], [150, 79], [178, 76], [205, 80], [236, 68],
+    [262, 62], [266, 72], [264, 98], [260, 124], [272, 150], [275, 182],
+    [262, 212], [230, 234], [180, 243], [130, 240], [95, 226], [72, 202],
   ]);
-  b.step('귀 달린 머리', '종이 위쪽 가운데에 귀가 쏙 올라온 큰 머리를 그려요.', head);
+  b.step('귀 달린 머리', '종이 위쪽에 귀가 쫑긋 올라온 큰 머리를 그려요.', head);
 
-  const earL = b.closed('earL', [[106, 100], [104, 68], [134, 86]], 0.7);
-  const earR = b.closed('earR', [[294, 100], [296, 68], [266, 86]], 0.7);
+  const earL = b.closed('earL', [[70, 88], [96, 99], [78, 120]], 0.6);
+  const earR = b.closed('earR', [[229, 95], [255, 80], [248, 112]], 0.6);
   b.step('귀 안쪽', '귀 안에 작은 세모를 하나씩 넣어요.', earL, earR);
 
-  const eyeL = b.closed('eyeL', ellipse(146, 178, 19, 23));
-  const eyeR = b.closed('eyeR', ellipse(254, 178, 19, 23));
-  const hiL = b.closed('hiL', ellipse(152, 170, 6, 6));
-  const hiR = b.closed('hiR', ellipse(260, 170, 6, 6));
-  b.step('눈 두 개', '얼굴 가운데에 큰 눈을 두 개 그리고 반짝이를 넣어요.', eyeL, eyeR, hiL, hiR);
+  const eyeL = b.closed('eyeL', ellipse(127, 166, 8, 9));
+  const eyeR = b.closed('eyeR', ellipse(207, 160, 8, 9));
+  b.step('눈 두 개', '얼굴 가운데에 작고 까만 눈을 두 개 그려요.', eyeL, eyeR);
 
-  const nose = b.closed('nose', [[186, 206], [200, 203], [214, 206], [207, 216], [200, 220], [193, 216]]);
-  const mouth = b.open('mouth', [[200, 220], [182, 224], [186, 234], [200, 238], [214, 234], [218, 224], [200, 220]], ['nose', 'nose']);
-  b.step('코와 입', '눈 사이 아래에 작은 코를 그리고 그 밑에 입을 달아요.', nose, mouth);
+  const nose = b.closed('nose', [[156, 175], [168, 172], [179, 174], [173, 182], [168, 186], [162, 182]]);
+  const mouth = b.open('mouth', [[148, 194], [155, 201], [164, 199], [168, 186], [172, 199], [181, 200], [189, 192]], [null, null]);
+  b.step('코와 입', '눈 사이 아래에 작은 코를 그리고 그 밑에 입을 그려요.', nose, mouth);
 
   const body = b.open('body', [
-    [146, 272], [128, 312], [118, 368], [126, 414], [160, 432], [200, 435],
-    [240, 432], [274, 414], [282, 368], [272, 312], [254, 272],
+    [108, 232], [86, 264], [70, 300], [52, 330], [47, 366], [58, 400], [80, 425],
+    [110, 437], [165, 438], [220, 437], [246, 425], [268, 396], [276, 360],
+    [268, 326], [252, 300], [238, 268], [222, 236],
   ], ['head', 'head']);
   b.step('통통한 몸', '머리 아래에 엉덩이가 넓은 통통한 몸을 그려요.', body);
 
-  const pawL = b.open('pawL', [[150, 434], [148, 408], [170, 394], [192, 406], [194, 434]], ['body', 'body']);
-  const pawR = b.open('pawR', [[206, 434], [208, 406], [230, 394], [252, 408], [250, 434]], ['body', 'body']);
+  const pawL = b.open('pawL', [[104, 437], [100, 418], [112, 404], [140, 403], [156, 415], [158, 437]], ['body', 'body']);
+  const pawR = b.open('pawR', [[170, 437], [172, 415], [188, 403], [214, 404], [226, 418], [228, 437]], ['body', 'body']);
   b.step('앞발 두 개', '몸 아래쪽에 동글동글한 앞발을 두 개 그려요.', pawL, pawR);
 
-  const tail = b.open('tail', [
-    [276, 410], [316, 414], [346, 392], [360, 352], [356, 316], [344, 300],
-    [330, 306], [332, 336], [324, 370], [302, 388], [281, 386],
-  ], ['body', 'body']);
-  b.step('꼬리', '몸 옆에서 위로 휘어 올라가는 꼬리를 그려요.', tail);
+  const legLo = b.open('legLo', [[72, 300], [80, 348], [92, 386], [106, 410]], ['body', 'pawL']);
+  const legRo = b.open('legRo', [[254, 302], [248, 350], [236, 386], [224, 410]], ['body', 'pawR']);
+  b.step('앞다리', '몸 옆에서 앞발까지 다리 줄을 하나씩 그어요.', legLo, legRo);
 
-  const collar = b.open('collar', [[132, 300], [166, 318], [200, 322], [234, 318], [268, 300]], ['body', 'body']);
-  const bell = b.closed('bell', ellipse(200, 335, 13, 13));
-  b.step('목걸이', '머리 밑에 목걸이를 걸고 가운데에 방울을 달아요.', collar, bell);
+  const tail = b.open('tail', [
+    [268, 412], [300, 404], [328, 384], [340, 342], [332, 294], [334, 266],
+    [348, 258], [358, 248], [352, 236], [334, 237], [314, 254], [305, 290],
+    [312, 332], [304, 368], [286, 384], [271, 390],
+  ], ['body', 'body']);
+  b.step('꼬리', '몸 옆에서 위로 길게 말려 올라가는 꼬리를 그려요.', tail);
 
   return {
     id: 'cat-v2', title: '고양이(시안)', theme: 'animal', difficulty: 'easy', grades: ['lower'],
     paper: 'portrait', viewBox: '0 0 400 500',
-    setupSay: '종이를 세로로 놓고, 위쪽 가운데에 주먹만큼 크게 그릴 거예요.',
+    setupSay: '종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.',
     coloringSeconds: 120, steps: b.steps, keywords: ['동물', '고양이', '시안'],
   };
 }
 
-// ================================================================ 아기 공룡 (오른쪽을 봅니다)
+// ================================================================ 아기 공룡 — 참조: refs/dino.png (FLUX.1 schnell), 오른쪽을 봅니다
 function dino() {
   const b = bench();
   const head = b.closed('head', [
-    [128, 150], [142, 98], [190, 64], [254, 58], [312, 80], [350, 122],
-    [362, 168], [346, 210], [302, 234], [240, 242], [180, 234], [140, 200],
+    [162, 170], [170, 128], [190, 100], [220, 84], [260, 80], [300, 84],
+    [335, 100], [360, 125], [370, 155], [364, 180], [345, 196], [310, 220],
+    [270, 240], [235, 246], [200, 244], [176, 232], [162, 210], [158, 190],
   ]);
   b.step('큰 머리', '종이 위쪽에 옆으로 넓적한 큰 머리를 그려요.', head);
 
-  const eye = b.closed('eye', ellipse(280, 138, 19, 22));
-  const pupil = b.closed('pupil', ellipse(286, 142, 8, 10));
-  b.step('큰 눈', '머리 앞쪽에 큰 눈을 그리고 안에 눈동자를 넣어요.', eye, pupil);
+  const eye = b.closed('eye', ellipse(232, 148, 15, 19));
+  const shine = b.closed('shine', ellipse(227, 141, 5, 5));
+  b.step('큰 눈', '머리 가운데에 큰 눈을 그리고 안에 반짝이를 넣어요.', eye, shine);
+
+  const nL = b.closed('nL', ellipse(318, 120, 4, 5));
+  const nR = b.closed('nR', ellipse(336, 109, 4, 5));
+  const mouth = b.open('mouth', [[258, 180], [272, 192], [300, 197], [330, 191], [358, 181]], [null, 'head']);
+  b.step('코와 입', '코끝에 콧구멍을 두 개 찍고 웃는 입을 그려요.', nL, nR, mouth);
 
   const body = b.open('body', [
-    [180, 234], [146, 270], [128, 322], [134, 380], [166, 410], [220, 416],
-    [266, 404], [292, 368], [294, 318], [282, 268], [270, 240],
+    [168, 236], [146, 262], [120, 290], [104, 318], [110, 360], [126, 394],
+    [150, 408], [200, 412], [250, 410], [284, 398], [292, 360], [286, 320],
+    [276, 282], [266, 246],
   ], ['head', 'head']);
   b.step('몸', '머리 아래에 배가 볼록한 몸을 그려요.', body);
 
   const tail = b.open('tail', [
-    [140, 392], [100, 396], [64, 382], [38, 352], [36, 336], [52, 340],
-    [86, 350], [116, 340], [129, 322],
+    [106, 316], [80, 318], [56, 312], [38, 304], [32, 318], [42, 342],
+    [70, 372], [104, 396], [140, 406],
   ], ['body', 'body']);
-  b.step('꼬리', '몸 옆에서 끝이 살짝 올라간 꼬리를 그려요.', tail);
+  b.step('꼬리', '몸 뒤로 끝이 살짝 말려 올라간 꼬리를 그려요.', tail);
 
-  const legB = b.open('legB', [[164, 410], [160, 444], [176, 456], [204, 456], [212, 442], [210, 416]], ['body', 'body']);
-  const legF = b.open('legF', [[236, 414], [234, 444], [250, 456], [278, 456], [286, 442], [280, 392]], ['body', 'body']);
-  b.step('다리 두 개', '몸 아래에 짧고 통통한 다리를 두 개 그려요.', legB, legF);
+  const thigh = b.open('thigh', [[134, 396], [136, 356], [160, 332], [196, 336], [214, 366], [210, 410]], ['body', 'body']);
+  const footB = b.open('footB', [[152, 410], [148, 430], [162, 440], [200, 440], [214, 428], [208, 411]], ['body', 'body']);
+  b.step('뒷다리', '몸 아래쪽에 통통한 다리와 발을 그려요.', thigh, footB);
 
-  const arm = b.open('arm', [[292, 296], [314, 300], [326, 316], [316, 328], [294, 330]], ['body', 'body']);
+  const footF = b.open('footF', [[258, 410], [258, 426], [276, 432], [310, 428], [326, 410], [316, 388], [290, 384]], ['body', 'body']);
+  b.step('앞발', '몸 앞쪽 아래에 앞으로 내민 발을 그려요.', footF);
+
+  const arm = b.open('arm', [[286, 286], [306, 296], [314, 316], [304, 330], [290, 326]], ['body', 'body']);
   b.step('작은 팔', '몸 앞쪽에 쏙 내민 작은 팔을 하나 그려요.', arm);
 
-  const spikesH = b.bumps('spikesH', 'head', [196, 62], [132, 132], 3, 19, -1);
-  const spikesB = b.bumps('spikesB', 'body', [158, 256], [130, 318], 2, 18, -1);
+  const belly = b.open('belly', [[290, 350], [256, 362], [226, 360], [212, 352]], ['body', 'thigh']);
+  b.step('배', '팔 아래에서 다리까지 배를 따라 줄을 그어요.', belly);
+
+  const spikesH = b.bumps('spikesH', 'head', [172, 230], [250, 80], 4, 27, 1, true);
+  const spikesB = b.bumps('spikesB', 'body', [158, 250], [106, 314], 2, 24, -1);
   b.step('등 뿔', '머리 뒤와 등을 따라 동글동글한 뿔을 그려요.', spikesH, spikesB);
-
-  const nostril = b.closed('nostril', ellipse(340, 150, 4, 6));
-  const mouth = b.open('mouth', [[358, 184], [326, 188], [296, 192], [306, 210], [330, 210], [346, 202]], ['head', 'head']);
-  b.step('코와 입', '코끝에 콧구멍을 찍고 그 아래에 웃는 입을 그려요.', nostril, mouth);
-
-  const belly = b.open('belly', [[292, 282], [256, 302], [242, 350], [252, 392], [266, 404]], ['body', 'body']);
-  b.step('배', '팔 아래에서 몸 끝까지 배를 따라 줄을 그어요.', belly);
-
-  const spots = [b.closed('s1', ellipse(186, 300, 11, 9)), b.closed('s2', ellipse(204, 352, 9, 8)), b.closed('s3', ellipse(166, 356, 8, 7))];
-  b.step('점 무늬', '몸 위에 크고 작은 동그라미 무늬를 그려요.', ...spots);
 
   return {
     id: 'dino-v2', title: '아기 공룡(시안)', theme: 'animal', difficulty: 'normal', grades: ['middle'],
     paper: 'portrait', viewBox: '0 0 400 500',
-    setupSay: '종이를 세로로 놓고, 위쪽 가운데에 주먹만큼 크게 그릴 거예요.',
+    setupSay: '종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.',
     coloringSeconds: 150, steps: b.steps, keywords: ['동물', '공룡', '시안'],
   };
 }
 
-// ================================================================ 로켓
+// ================================================================ 로켓 — 참조: refs/rocket.png (FLUX.1 schnell)
 function rocket() {
   const b = bench();
   const body = b.closed('body', [
-    [200, 46], [242, 78], [274, 140], [286, 224], [280, 304], [260, 350],
-    [200, 364], [140, 350], [120, 304], [114, 224], [126, 140], [158, 78],
+    [200, 46], [226, 66], [246, 100], [262, 150], [274, 210], [276, 260],
+    [270, 304], [258, 330], [240, 342], [200, 345], [160, 342], [142, 330],
+    [130, 304], [124, 260], [126, 210], [138, 150], [154, 100], [174, 66],
   ]);
   b.step('통통한 몸통', '종이 가운데에 위가 뾰족한 통통한 몸통을 그려요.', body);
 
-  const tip = b.open('tip', [[146, 106], [174, 122], [200, 126], [226, 122], [254, 106]], ['body', 'body']);
-  b.step('머리 띠', '몸통 위쪽에 아래로 볼록한 줄을 가로로 그어요.', tip);
+  const band1 = b.open('band1', [[167, 86], [184, 92], [200, 94], [216, 92], [234, 86]], ['body', 'body']);
+  const band2 = b.open('band2', [[156, 104], [178, 111], [200, 113], [222, 111], [244, 104]], ['body', 'body']);
+  b.step('머리 줄 두 개', '몸통 위쪽에 아래로 볼록한 줄을 두 개 그어요.', band1, band2);
 
-  const win = b.closed('win', ellipse(200, 204, 44, 44));
-  b.step('동그란 창', '줄 아래 가운데에 큰 동그란 창을 그려요.', win);
+  const win = b.closed('win', ellipse(201, 186, 31, 31));
+  const winIn = b.closed('winIn', ellipse(201, 186, 17, 17));
+  b.step('큰 창', '줄 아래 가운데에 동그라미를 두 겹으로 그려요.', win, winIn);
 
-  const winIn = b.closed('winIn', ellipse(200, 204, 30, 30));
-  b.step('창 안쪽', '창 안에 조금 작은 동그라미를 하나 더 그려요.', winIn);
+  const w2 = b.closed('w2', ellipse(201, 246, 15, 15));
+  const w3 = b.closed('w3', ellipse(201, 300, 15, 15));
+  b.step('작은 창 두 개', '큰 창 아래에 작은 동그라미를 두 개 그려요.', w2, w3);
 
-  const finL = b.open('finL', [[122, 262], [92, 282], [68, 326], [66, 382], [82, 390], [104, 364], [138, 344]], ['body', 'body']);
-  const finR = b.open('finR', [[278, 262], [308, 282], [332, 326], [334, 382], [318, 390], [296, 364], [262, 344]], ['body', 'body']);
-  b.step('날개 두 개', '몸통 양옆 아래에 둥근 날개를 하나씩 그려요.', finL, finR);
+  const finL = b.open('finL', [[125, 245], [96, 262], [78, 292], [75, 332], [82, 367], [102, 344], [124, 328], [141, 322]], ['body', 'body']);
+  const finR = b.open('finR', [[275, 245], [304, 262], [322, 292], [325, 332], [318, 367], [298, 344], [276, 328], [259, 322]], ['body', 'body']);
+  b.step('날개 두 개', '몸통 양옆 아래에 끝이 뾰족한 날개를 그려요.', finL, finR);
 
-  const band = b.open('band', [[118, 290], [158, 306], [200, 310], [242, 306], [282, 290]], ['body', 'body']);
-  b.step('아래 띠', '날개 사이에 아래로 볼록한 줄을 하나 더 그어요.', band);
+  const finLi = b.open('finLi', [[131, 290], [106, 304], [92, 330], [86, 358]], ['body', 'finL']);
+  const finRi = b.open('finRi', [[269, 290], [294, 304], [308, 330], [314, 358]], ['body', 'finR']);
+  b.step('날개 안쪽 줄', '날개 안에 몸통에서 끝까지 줄을 하나씩 그어요.', finLi, finRi);
 
-  const nozzle = b.open('nozzle', [[172, 358], [170, 380], [184, 388], [216, 388], [230, 380], [228, 358]], ['body', 'body']);
-  b.step('불 나오는 곳', '몸통 바닥에 작고 둥근 통을 붙여요.', nozzle);
+  const nozzle = b.open('nozzle', [[160, 343], [164, 360], [178, 368], [200, 371], [222, 368], [236, 360], [240, 343]], ['body', 'body']);
+  b.step('불 나오는 곳', '몸통 바닥에 납작하고 둥근 통을 붙여요.', nozzle);
 
-  const flame = b.open('flame', [
-    [180, 388], [160, 420], [168, 432], [184, 422], [200, 470], [216, 422], [232, 432], [240, 420], [220, 388],
-  ], ['nozzle', 'nozzle']);
-  const flameIn = b.open('flameIn', [[192, 388], [194, 412], [200, 428], [206, 412], [208, 388]], ['nozzle', 'nozzle']);
+  const flame = b.open('flame', [[180, 369], [172, 398], [166, 410], [182, 413], [200, 452], [216, 418], [232, 398], [222, 369]], ['nozzle', 'nozzle']);
+  const flameIn = b.open('flameIn', [[191, 370], [194, 394], [200, 410], [206, 394], [209, 370]], ['nozzle', 'nozzle']);
   b.step('불꽃', '통 아래로 출렁이는 불꽃을 두 겹으로 그려요.', flame, flameIn);
 
-  const st1 = b.closed('st1', star(66, 132, 24, 11));
-  const st2 = b.closed('st2', star(340, 200, 18, 8));
-  b.step('별 두 개', '로켓 양옆 빈 곳에 반짝이는 별을 두 개 그려요.', st1, st2);
-
   return {
-    id: 'rocket-v2', title: '로켓(시안)', theme: 'thing', difficulty: 'normal', grades: ['middle'],
+    id: 'rocket-v2', title: '로켓(시안)', theme: 'thing', difficulty: 'easy', grades: ['lower'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 가운데에 손바닥만큼 길게 그릴 거예요.',
-    coloringSeconds: 150, steps: b.steps, keywords: ['탈것', '로켓', '우주', '시안'],
+    coloringSeconds: 120, steps: b.steps, keywords: ['탈것', '로켓', '우주', '시안'],
   };
 }
 
@@ -276,6 +284,6 @@ mkdirSync(join(ROOT, 'refs'), { recursive: true });
 for (const dw of [cat(), dino(), rocket()]) {
   mkdirSync(join(ROOT, 'drawings', dw.id), { recursive: true });
   writeFileSync(join(ROOT, 'drawings', dw.id, 'drawing.json'), JSON.stringify(dw, null, 2) + '\n');
-  writeFileSync(join(ROOT, 'refs', `${REF_NAME[dw.id]}.svg`), refSvg(dw));
+  writeFileSync(join(ROOT, 'refs', `${REF_NAME[dw.id]}-strokes.svg`), refSvg(dw));
   console.log(`${dw.id} — ${dw.steps.length}단계`);
 }
