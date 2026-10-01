@@ -15,6 +15,14 @@
   --stroke-past: 4;
 }
 
+@font-face {
+  font-family: 'Pretendard Variable';
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+  src: url('../assets/fonts/PretendardVariable.subset.woff2') format('woff2-variations');
+}
+
 * { box-sizing: border-box; }
 
 html, body {
@@ -22,7 +30,7 @@ html, body {
   height: 100%;
   background: var(--bg);
   color: var(--ink);
-  font-family: "Pretendard", "Malgun Gothic", -apple-system, system-ui, sans-serif;
+  font-family: "Pretendard Variable", "Pretendard", "Malgun Gothic", -apple-system, system-ui, sans-serif;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -31,11 +39,65 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 .screen { min-height: 100vh; }
 
+/* ---------------------------------------------------------------- 상단바
+   짬짬이 가족(게임·퀴즈·영상·이야기·낱말·1분사회)과 같은 구조 — 짬짬이 이야기의 css/style.css 를 따릅니다.
+   색을 채운 띠 위에 [로고 46px + 제목 + 부제], 오른쪽에 [처음으로] + 자매 사이트 바로가기.
+   띠 색만 그리기의 가족 색(코랄)을 씁니다. 폭과 좌우 여백은 홈 본문과 같게 맞춰
+   로고와 첫 카드의 왼쪽 선이 어긋나지 않게 합니다. */
+:root { --wrap: 1180px; --gutter: 32px; --coral-deep: #C8441F; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  max-width: var(--wrap); margin: 0 auto; padding: 0.9rem var(--gutter);
+  background: var(--coral);
+  box-shadow: 0 10px 24px rgba(140, 45, 18, 0.22);
+  position: sticky; top: 0; z-index: 10;
+}
+.brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: #fff; letter-spacing: -0.01em; }
+.brand-icon { width: 46px; height: 46px; display: inline-flex; flex: none; }
+.brand-icon img { width: 46px; height: 46px; display: block; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: 1.45rem; font-weight: 900; color: #fff; }
+.brand-sub { font-size: 0.8rem; font-weight: 600; color: #FFE2D6; }
+.topbar-actions { display: flex; align-items: center; gap: 0.75rem; flex: none; }
+.topbar .icon-btn {
+  width: 3rem; height: 3rem; display: inline-flex; align-items: center; justify-content: center;
+  background: #FFE9E1; border: 2px solid rgba(255, 255, 255, 0.55); border-radius: 12px;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+.topbar .icon-btn img { width: 1.7rem; height: 1.7rem; }
+.topbar .icon-btn:hover { background: #FFF3EE; transform: translateY(-1px); }
+.topbar .icon-btn:active { transform: translateY(1px); }
+.topbar .icon-btn:focus-visible { outline: 3px solid #FFD34D; outline-offset: 2px; }
+
 /* ---------------------------------------------------------------- 홈 */
-.home { padding: 4vh 4vw 8vh; max-width: 1600px; margin: 0 auto; }
-.home-head h1 { font-size: clamp(34px, 3.6vw, 60px); margin: 0 0 .3em; letter-spacing: -.02em; }
-.home-head .lead { font-size: clamp(18px, 1.5vw, 26px); margin: 0 0 .4em; color: var(--dim); }
-.home-head .hint { font-size: clamp(14px, 1.1vw, 18px); margin: 0; color: var(--dim); opacity: .8; }
+.home { padding: 0 var(--gutter) 8vh; max-width: var(--wrap); margin: 0 auto; }
+/* 안내 문구 — 상단바 바로 아래 흰 띠. 음수 마진으로 본문 여백을 되돌려 띠 끝을 상단바 끝과 맞춥니다. */
+.cta-strip {
+  background: var(--card); border-bottom: 1px solid var(--line);
+  margin: 0 calc(-1 * var(--gutter)) 0; padding: 0.85rem var(--gutter);
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.cta-copy { margin: 0; font-size: 0.95rem; font-weight: 600; color: #4A5568; }
+.cta-copy b { color: var(--coral-deep); font-weight: 900; }
+.cta-strip .hint { margin: 0; font-size: 0.8rem; color: var(--dim); }
+.site-footer { margin-top: 6vh; padding-top: 2vh; border-top: 1px solid var(--line); color: var(--dim); font-size: 0.9rem; }
+.site-footer p { margin: 0.3em 0; }
+.site-footer .credit { font-size: 0.75rem; }
+.site-footer a { color: inherit; }
+
+/* 좁은 화면 — 바로가기 스타일은 공통 파일 안에 있어 줄일 수 없으므로 상단바를 두 줄로 접습니다(자매 사이트와 같은 방식). */
+@media (max-width: 720px) {
+  .topbar { flex-wrap: wrap; row-gap: 0.5rem; }
+  .topbar-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; row-gap: 0.5rem; }
+}
+@media (max-width: 640px) {
+  :root { --gutter: 20px; }
+}
+/* 전자칠판(대형 화면) — 자매 사이트와 같이 1560px 상자, 글자를 키웁니다. */
+@media (min-width: 1600px) {
+  html { font-size: 23px; }
+  :root { --wrap: 1560px; --gutter: 40px; }
+}
 
 .filters { margin: 3vh 0 2vh; display: flex; flex-direction: column; gap: 12px; }
 .chips { display: flex; flex-wrap: wrap; gap: 10px; }

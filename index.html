@@ -9,17 +9,36 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="favicon.svg">
 <link rel="manifest" href="manifest.webmanifest">
+<!-- 폰트는 css/app.css 의 @font-face 로 자가 호스팅합니다(외부 CDN 없음 → 오프라인 동작). 짬짬이 가족과 같은 파일입니다. -->
+<link rel="preload" href="assets/fonts/PretendardVariable.subset.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 
+<!-- 상단바 — 짬짬이 가족(게임·퀴즈·영상·이야기·낱말·1분사회)과 같은 구조입니다.
+     색을 채운 띠 위에 [로고 + 제목 + 부제], 오른쪽에 [처음으로] + 자매 사이트 바로가기.
+     띠 색만 그리기의 가족 색(코랄)을 씁니다. 따라 그리기 화면에서는 그림을 크게 보이려고 숨깁니다. -->
+<header class="topbar" id="topbar">
+  <a class="brand" href="./" data-act="home">
+    <span class="brand-icon"><img src="favicon.svg" alt="" aria-hidden="true"></span>
+    <span class="brand-text">
+      <span class="brand-name">짬짬이 그리기</span>
+      <span class="brand-sub">수업 전후 5분 안팎, 한 획씩 따라 그리기</span>
+    </span>
+  </a>
+  <div class="topbar-actions">
+    <button class="icon-btn" type="button" data-act="home" aria-label="처음으로"><img src="icons/home-1.svg" alt="" aria-hidden="true"></button>
+    <!-- 자매 사이트 바로가기 — 내용·스타일은 shared/jjam-switcher.js(상류 jjam 의 공통 파일) 안에 있습니다. -->
+    <div class="jjam-switch" data-site="draw"></div>
+  </div>
+</header>
+
 <!-- 1. 홈 — 그림 고르기 -->
 <section class="screen home" id="s-home">
-  <header class="home-head">
-    <h1>짬짬이 그리기</h1>
-    <p class="lead">그림을 고르면 화면이 한 획씩 보여 줍니다. 종이와 연필만 준비하세요.</p>
+  <div class="cta-strip">
+    <p class="cta-copy"><b>수업 자투리 시간,</b> <b id="drawingCount">45가지</b> 그림을 한 획씩 따라 그리며 학생들과 즐거운 시간 보내기</p>
     <p class="hint" id="offlineHint">한 번 열어 두면 인터넷 없이도 됩니다.</p>
-  </header>
+  </div>
 
   <div class="filters">
     <div class="chips" id="diffChips" role="group" aria-label="난이도"></div>
@@ -28,6 +47,13 @@
 
   <ul class="grid" id="cardGrid"></ul>
   <p class="empty" id="emptyMsg" hidden>고른 조건에 맞는 그림이 없습니다.</p>
+
+  <footer class="site-footer">
+    <p>비뚤어도 완성되면 그럴듯해요. 다 그린 것을 칭찬해 주세요.</p>
+    <p class="credit">아이콘 <a href="https://github.com/webalys-hq/streamline-vectors" target="_blank" rel="noopener">Streamline Plump Color</a>
+      · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>
+      · 읽어 주는 목소리는 AI(Supertonic 3)로 만들었습니다</p>
+  </footer>
 </section>
 
 <!-- 2. 준비 -->
@@ -139,5 +165,6 @@
 </section>
 
 <script src="js/app.js"></script>
+<script src="shared/jjam-switcher.js" defer></script>
 </body>
 </html>

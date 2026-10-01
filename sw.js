@@ -1,7 +1,7 @@
 // 오프라인에서 전 기능이 동작해야 합니다(PRD 3.6 · 10장).
 // 학교 인터넷을 신뢰하지 않으므로, 첫 방문에서 필요한 것을 전부 캐시합니다.
 // 그림 데이터는 통합본 하나라 파일 수가 늘지 않습니다(PRD 11장).
-const VERSION = 'jjam-draw-v6'; // 그림 47개로 늘려 캐시를 바꿉니다
+const VERSION = 'jjam-draw-v7'; // 상단바를 짬짬이 가족 디자인으로 바꾸고 그림 45개로 캐시를 바꿉니다
 // 음성 파일은 따로 둡니다 — 앱을 고쳐 VERSION 이 바뀌어도 수 MB 를 다시 받지 않게 합니다.
 // 파일 이름에 문장 해시가 있어 문장이 바뀐 그림만 새 파일이 됩니다.
 const AUDIO = 'jjam-draw-audio';
@@ -13,6 +13,9 @@ const ASSETS = [
   'data/drawings.json',
   'data/voice.json',
   'favicon.svg',
+  'shared/jjam-switcher.js',
+  'icons/home-1.svg',
+  'assets/fonts/PretendardVariable.subset.woff2',
   'manifest.webmanifest',
 ];
 
