@@ -114,6 +114,13 @@ for (const id of IDS) {
       continue;
     }
     const d = set[id];
+    if (!d) {
+      const fig = document.createElement('figure');
+      fig.className = kind;
+      fig.innerHTML = `<div class="noref">새 소재 — 지금 그림 없음</div><figcaption><span class="tag">${tag}</span></figcaption>`;
+      two.appendChild(fig);
+      continue;
+    }
     const fig = document.createElement('figure');
     fig.className = kind;
     fig.appendChild(svgOf(d, d.steps.length - 1, 'full'));
