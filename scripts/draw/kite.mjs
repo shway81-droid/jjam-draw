@@ -15,7 +15,7 @@ const rr = (x0, y0, x1, y1, r) => [
 export default function draw() {
   const b = bench();
   const X0 = 84; const Y0 = 34; const X1 = 296; const Y1 = 296;
-  const kite = b.closed('kite', rr(X0, Y0, X1, Y1, 18), 0.8);
+  const kite = b.closed('kite', rr(X0, Y0, X1, Y1, 24), 0.8);
   b.step('연 몸', '종이 위쪽에 귀퉁이가 둥근 큰 네모 연을 그려요.', kite);
 
   const hole = b.closed('hole', ellipse(190, 182, 36, 36, 10));
