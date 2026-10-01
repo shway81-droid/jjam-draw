@@ -45,6 +45,6 @@ export default function draw() {
     id: 'fish', title: '물고기', theme: 'animal', difficulty: 'easy', grades: ['lower'],
     paper: 'landscape', viewBox: '0 0 500 400',
     setupSay: '종이를 가로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.',
-    coloringSeconds: 90, steps: b.steps, keywords: ['동물', '물고기', '바다'],
+    coloringSeconds: 150, steps: b.steps, keywords: ['동물', '물고기', '바다'],
   };
 }

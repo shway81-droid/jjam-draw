@@ -60,6 +60,6 @@ export default function draw() {
     id: 'dino', title: '공룡', theme: 'animal', difficulty: 'hard', grades: ['upper'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.',
-    coloringSeconds: 120, steps: b.steps, keywords: ['동물', '공룡', '옛날'],
+    coloringSeconds: 180, steps: b.steps, keywords: ['동물', '공룡', '옛날'],
   };
 }

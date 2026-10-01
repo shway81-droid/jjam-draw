@@ -78,6 +78,6 @@ export default function draw() {
     id: 'robot', title: '로봇', theme: 'thing', difficulty: 'hard', grades: ['upper'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 위쪽에 주먹만큼 큰 머리부터 그릴 거예요.',
-    coloringSeconds: 120, steps: b.steps, keywords: ['탈것', '로봇', '기계'],
+    coloringSeconds: 180, steps: b.steps, keywords: ['탈것', '로봇', '기계'],
   };
 }

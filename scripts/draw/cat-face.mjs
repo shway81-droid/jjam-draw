@@ -51,6 +51,6 @@ export default function draw() {
     id: 'cat-face', title: '고양이', theme: 'animal', difficulty: 'easy', grades: ['lower'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 가운데에 손바닥만큼 크게 그릴 거예요.',
-    coloringSeconds: 90, steps: b.steps, keywords: ['동물', '고양이', '얼굴'],
+    coloringSeconds: 150, steps: b.steps, keywords: ['동물', '고양이', '얼굴'],
   };
 }

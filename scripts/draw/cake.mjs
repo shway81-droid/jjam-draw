@@ -58,6 +58,6 @@ export default function draw() {
     id: 'cake', title: '케이크', theme: 'food', difficulty: 'normal', grades: ['middle'],
     paper: 'portrait', viewBox: '0 0 400 500',
     setupSay: '종이를 세로로 놓고, 아래쪽에 손바닥만큼 큰 몸통부터 그릴 거예요.',
-    coloringSeconds: 90, steps: b.steps, keywords: ['음식', '케이크', '생일'],
+    coloringSeconds: 150, steps: b.steps, keywords: ['음식', '케이크', '생일'],
   };
 }
